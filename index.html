@@ -157,22 +157,12 @@
     </div>
     <div class="hbtns">
       <button class="btn btn-ghost btn-sm" onclick="doRefresh()">↻ Refresh</button>
-      <button class="btn btn-success" onclick="togglePanel()">🔗 Sheets</button>
     </div>
   </div>
 
   <div class="asset-summary" id="asset-summary"></div>
 
-  <div class="panel" id="connect-panel" style="display:none">
-    <h3>🔗 Cambiar URL de Google Sheets</h3>
-    <p>Pegá la URL de publicación CSV de tu hoja <em>"lista de seguimiento"</em>:</p>
-    <div class="url-row">
-      <input class="url-input" id="url-input" type="text" placeholder="https://docs.google.com/spreadsheets/d/.../pub?gid=...&single=true&output=csv"/>
-      <button class="btn btn-primary" onclick="handleConnect()">Conectar</button>
-      <button class="btn btn-ghost" onclick="togglePanel()">Cancelar</button>
-    </div>
-    <div class="error-box" id="error-box" style="display:none"></div>
-  </div>
+  <div class="error-box" id="error-box" style="display:none"></div>
 
   <div class="section-label">📊 CEDEARs</div>
   <div class="cards">
@@ -1082,15 +1072,6 @@ function renderAssetSummary() {
 }
 
 function render() { renderCards(); renderAguinaldoCards(); renderTable(); renderRankings(); renderGananciasPerdidas(); renderGeoCards(); renderTechCards(); renderSectorDist(); renderAssetSummary(); updateSortIndicators(); }
-
-let panelOpen = false;
-function togglePanel() {
-  panelOpen = !panelOpen;
-  document.getElementById('connect-panel').style.display = panelOpen ? '' : 'none';
-}
-async function handleConnect() {
-  togglePanel();
-}
 
 async function cargarTodo() {
   await fetchLive();
