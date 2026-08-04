@@ -194,7 +194,7 @@
     <div class="geo-card tech">
       <div class="card-label">💻 Concentración Tech/Growth</div>
       <div class="card-val neutral" id="tech-pct">—</div>
-      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + FISV + EWY + SMH</div>
+      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + EWY + SMH</div>
       <div class="geo-bar-track"><div class="geo-bar-fill" id="tech-bar" style="width:0%;background:linear-gradient(90deg,#22d3ee,#6366f1)"></div></div>
       <div class="geo-target">Sin límite fijo — mirar en conjunto con el resto</div>
     </div>
@@ -766,11 +766,9 @@ const TICKER_INFO = {
   XLE:  "Energy Select Sector SPDR — petroleras y gasíferas de EE.UU.",
   XLY:  "Consumer Discretionary Select Sector SPDR — consumo no esencial de EE.UU. (retail, autos, ocio, e-commerce)",
   IVE:  "iShares S&P 500 Value ETF — empresas grandes de EE.UU. con perfil 'value' (más baratas relativo a sus fundamentals)",
-  ITA:  "iShares U.S. Aerospace & Defense ETF — sector aeroespacial y de defensa de EE.UU.",
   IBIT: "iShares Bitcoin Trust — expone a Bitcoin a través de un ETF listado en bolsa",
   NOW:  "ServiceNow Inc — software empresarial de gestión de flujos de trabajo (workflow/ITSM)",
   ADBE: "Adobe Inc — software creativo y de marketing (Photoshop, Premiere, Creative Cloud)",
-  FISV: "Fiserv Inc — procesamiento de pagos y servicios financieros tecnológicos",
   NVDA: "Nvidia Corp — diseño de GPUs, líder en chips para IA",
   ANET: "Arista Networks Inc — switches y redes de alta velocidad para data centers",
   XOM:  "ExxonMobil — una de las mayores petroleras integradas del mundo",
@@ -790,7 +788,6 @@ const TECH_CLASSIFICATION = {
   ADBE: 'tech',
   NVDA: 'tech',
   ANET: 'tech',
-  FISV: 'tech',
   EWY: 'tech',
   SMH: 'tech',
 };
@@ -803,12 +800,10 @@ const SECTOR_CLASSIFICATION = {
   XLP: 'Consumo defensivo',
   XLI: 'Industrial',
   XLV: 'Salud',
-  ITA: 'Aeroespacial y defensa',
   NOW: 'Tecnología',
   ADBE: 'Tecnología',
   NVDA: 'Tecnología',
   ANET: 'Tecnología',
-  FISV: 'Tecnología',
   SMH: 'Tecnología',
   EFA: 'Internacional',
   EEM: 'Internacional',
@@ -831,7 +826,6 @@ const SECTOR_DESCRIPTIONS = {
   'Consumo defensivo': 'Alimentos, higiene y bebidas: gasto esencial, suele sostenerse mejor en recesiones.',
   'Industrial': 'Manufactura, transporte y maquinaria. Buen termómetro de la actividad económica real.',
   'Salud': 'Farmacéuticas, seguros médicos y equipamiento. Defensivo, con demanda relativamente estable.',
-  'Aeroespacial y defensa': 'Aeroespacial y defensa de EE.UU. Muy ligado a presupuestos militares y contratos de gobierno.',
   'Cripto': 'Exposición a Bitcoin a través de un ETF listado en bolsa.',
   'Diversificado': 'ETFs de mercado amplio de EE.UU., sin sesgo a un sector puntual — funcionan como base de la cartera.',
   'Otros': 'Posiciones que todavía no tienen un sector asignado en el mapeo.',
@@ -893,7 +887,7 @@ function calcTechConcentracion(posArr) {
 function renderTechCards() {
   const t = calcTechConcentracion(positions);
   document.getElementById('tech-pct').textContent = fPct(t.pctTech, false);
-  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + FISV + EWY + SMH · ' + fARS(t.montoTech);
+  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + EWY + SMH · ' + fARS(t.montoTech);
   document.getElementById('tech-bar').style.width = Math.min(100, t.pctTech) + '%';
 
   document.getElementById('nontech-pct').textContent = fPct(t.pctResto, false);
