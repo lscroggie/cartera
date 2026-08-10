@@ -243,9 +243,11 @@
       <div class="card-patrimonio">
         <div class="card-label">AO27 · Bono soberano ARG 2027</div>
         <div style="margin-top:4px"><input class="pat-input" id="ao27-precio" type="number" placeholder="precio c/100 nominales ARS" oninput="recalcPatrimonio()"/></div>
-        <div class="pat-hint">450 nominales · (ej: 103000)</div>
+        <div class="pat-hint">450 nominales · precio c/100 VN · editable manualmente</div>
         <div class="card-val" id="ao27-saldo" style="margin-top:8px">—</div>
         <div class="card-sub">saldo en ARS</div>
+        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="fetchAO27()">↻ actualizar</button></div>
+        <div style="font-size:10px;color:#454952;margin-top:5px" id="ao27-status">no cargado</div>
       </div>
       <div class="card-patrimonio">
         <div class="card-label">₿ Cripto · CoinGecko</div>
@@ -600,6 +602,54 @@ async function fetchXOM() {
     recalcPatrimonio();
   } catch(e) {
     statusEl.textContent = '🔴 error: ' + e.message + ' (usando último valor)';
+  }
+}
+
+async function fetchAO27() {
+  const statusEl = document.getElementById('ao27-status');
+  if (!statusEl) return;
+
+  statusEl.textContent = '⟳ consultando AO27…';
+  try {
+    // Allaria publica la cotización de AO27 con fuente BYMA (información diferida).
+    // Se usa AllOrigins como proxy CORS para poder consultarla desde un HTML estático en GitHub Pages.
+    const sourceUrl = 'https://allaria.com.ar/Bono/Especie/AO27';
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(sourceUrl);
+    const res = await fetchWithTimeout(proxyUrl, 12000);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const html = await res.text();
+    if (!html || html.length < 500) throw new Error('respuesta vacía');
+
+    // Busca el valor inmediatamente anterior a "Último operado".
+    // Formato esperado: $155.940,00 / 155.940,00.
+    const normalized = html.replace(/&nbsp;/gi, ' ');
+    let match = normalized.match(/(?:\$|&#36;)?\s*([0-9]{2,3}(?:\.[0-9]{3})+(?:,[0-9]{2})?)\s*<[^>]*>[^<]*(?:Último|Ultimo)\s+operado/i);
+
+    // Fallback más tolerante ante pequeños cambios en el HTML.
+    if (!match) {
+      const marker = normalized.search(/(?:Último|Ultimo)\s+operado/i);
+      if (marker >= 0) {
+        const before = normalized.slice(Math.max(0, marker - 1200), marker);
+        const nums = [...before.matchAll(/(?:\$|&#36;)?\s*([0-9]{2,3}(?:\.[0-9]{3})+(?:,[0-9]{2})?)/g)];
+        if (nums.length) match = nums[nums.length - 1];
+      }
+    }
+
+    if (!match || !match[1]) throw new Error('no se encontró el último operado');
+
+    const price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+    if (!Number.isFinite(price) || price < 10000 || price > 1000000) {
+      throw new Error('precio fuera de rango');
+    }
+
+    document.getElementById('ao27-precio').value = price;
+    statusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · Allaria/BYMA · $ ' + Math.round(price).toLocaleString('es-AR');
+    recalcPatrimonio();
+  } catch(e) {
+    statusEl.textContent = '🔴 auto no disponible: ' + e.message + ' · podés cargarlo manual';
+    // No borra el input: conserva el último valor/manual como fallback.
+    recalcPatrimonio();
   }
 }
 
@@ -1026,6 +1076,7 @@ fetchXOM();
 window._ar = setInterval(() => { cargarTodo(); }, 5*60*1000);
 setInterval(() => fetchCripto(), 15*60*1000);
 setInterval(() => fetchXOM(), 15*60*1000);
+setInterval(() => fetchAO27(), 15*60*1000);
 </script>
 </body>
 </html>
