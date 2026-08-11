@@ -246,7 +246,7 @@
         <div class="pat-hint">450 nominales · precio c/100 VN · editable manualmente</div>
         <div class="card-val" id="ao27-saldo" style="margin-top:8px">—</div>
         <div class="card-sub">saldo en ARS</div>
-        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="fetchAO27()">↻ actualizar</button></div>
+        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="cargarTodo()">↻ actualizar</button></div>
         <div style="font-size:10px;color:#454952;margin-top:5px" id="ao27-status">no cargado</div>
       </div>
       <div class="card-patrimonio">
@@ -414,7 +414,7 @@ async function fetchCSV(sheetName) {
 function parseSheetData(raw) {
   const rows = parseCSV(raw);
 
-  let sumInv = 0, sumSaldo = 0, sumRes = 0, sumRend = 0, sumUSD = 0, ccl = 0;
+  let sumInv = 0, sumSaldo = 0, sumRes = 0, sumRend = 0, sumUSD = 0, ccl = 0, ao27 = 0;
   rows.forEach((r, idx) => {
     const lbl = (r[0]||'').trim().toLowerCase();
     if (/^invertido/.test(lbl))     sumInv   = parseNum(r[2]);
@@ -428,6 +428,13 @@ function parseSheetData(raw) {
       var possibleCCL = parseFloat(rawCCL);
       if (!isNaN(possibleCCL) && possibleCCL > 500 && possibleCCL < 5000) {
         ccl = possibleCCL;
+      }
+
+      // Columna I (índice 8): precio del AO27, actualizado por Apps Script (actualizarAO27) vía data912.com.
+      var rawAO27 = String(r[8] || '').replace(/['"]/g, '').trim().replace(',', '.');
+      var possibleAO27 = parseFloat(rawAO27);
+      if (!isNaN(possibleAO27) && possibleAO27 > 10000 && possibleAO27 < 1000000) {
+        ao27 = possibleAO27;
       }
     }
   });
@@ -501,7 +508,7 @@ function parseSheetData(raw) {
     saldoUSD:    sumUSD    || pos.reduce((s, p) => s + p.saldoUSD, 0)
   };
 
-  return { positions: pos, summary: summaryOut, ccl, xomPrice };
+  return { positions: pos, summary: summaryOut, ccl, xomPrice, ao27 };
 }
 
 // Asigna un color estable por símbolo, en el orden en que aparecen las posiciones.
@@ -518,7 +525,7 @@ async function fetchLive() {
   document.getElementById('error-box').style.display = 'none';
   try {
     const raw = await fetchCSV('lista de seguimiento');
-    const { positions: rawPos, ccl, xomPrice } = parseSheetData(raw);
+    const { positions: rawPos, ccl, xomPrice, ao27 } = parseSheetData(raw);
 
     positions = excluirManejadosAparte(rawPos);
     summary = recalcularSummary(positions);
@@ -531,6 +538,14 @@ async function fetchLive() {
 
     if (xomPrice > 0) {
       document.getElementById('xom-precio').value = xomPrice;
+    }
+
+    const ao27StatusEl = document.getElementById('ao27-status');
+    if (ao27 > 0) {
+      document.getElementById('ao27-precio').value = ao27;
+      if (ao27StatusEl) ao27StatusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · data912 · $ ' + Math.round(ao27).toLocaleString('es-AR');
+    } else if (ao27StatusEl) {
+      ao27StatusEl.textContent = '🔴 sin dato del sheet · podés cargarlo manual';
     }
 
     lastUpdate = new Date();
@@ -602,54 +617,6 @@ async function fetchXOM() {
     recalcPatrimonio();
   } catch(e) {
     statusEl.textContent = '🔴 error: ' + e.message + ' (usando último valor)';
-  }
-}
-
-async function fetchAO27() {
-  const statusEl = document.getElementById('ao27-status');
-  if (!statusEl) return;
-
-  statusEl.textContent = '⟳ consultando AO27…';
-  try {
-    // Allaria publica la cotización de AO27 con fuente BYMA (información diferida).
-    // Se usa AllOrigins como proxy CORS para poder consultarla desde un HTML estático en GitHub Pages.
-    const sourceUrl = 'https://allaria.com.ar/Bono/Especie/AO27';
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(sourceUrl);
-    const res = await fetchWithTimeout(proxyUrl, 12000);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-
-    const html = await res.text();
-    if (!html || html.length < 500) throw new Error('respuesta vacía');
-
-    // Busca el valor inmediatamente anterior a "Último operado".
-    // Formato esperado: $155.940,00 / 155.940,00.
-    const normalized = html.replace(/&nbsp;/gi, ' ');
-    let match = normalized.match(/(?:\$|&#36;)?\s*([0-9]{2,3}(?:\.[0-9]{3})+(?:,[0-9]{2})?)\s*<[^>]*>[^<]*(?:Último|Ultimo)\s+operado/i);
-
-    // Fallback más tolerante ante pequeños cambios en el HTML.
-    if (!match) {
-      const marker = normalized.search(/(?:Último|Ultimo)\s+operado/i);
-      if (marker >= 0) {
-        const before = normalized.slice(Math.max(0, marker - 1200), marker);
-        const nums = [...before.matchAll(/(?:\$|&#36;)?\s*([0-9]{2,3}(?:\.[0-9]{3})+(?:,[0-9]{2})?)/g)];
-        if (nums.length) match = nums[nums.length - 1];
-      }
-    }
-
-    if (!match || !match[1]) throw new Error('no se encontró el último operado');
-
-    const price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
-    if (!Number.isFinite(price) || price < 10000 || price > 1000000) {
-      throw new Error('precio fuera de rango');
-    }
-
-    document.getElementById('ao27-precio').value = price;
-    statusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · Allaria/BYMA · $ ' + Math.round(price).toLocaleString('es-AR');
-    recalcPatrimonio();
-  } catch(e) {
-    statusEl.textContent = '🔴 auto no disponible: ' + e.message + ' · podés cargarlo manual';
-    // No borra el input: conserva el último valor/manual como fallback.
-    recalcPatrimonio();
   }
 }
 
@@ -1073,11 +1040,9 @@ async function cargarTodo() {
 cargarTodo();
 fetchCripto();
 fetchXOM();
-fetchAO27();
 window._ar = setInterval(() => { cargarTodo(); }, 5*60*1000);
 setInterval(() => fetchCripto(), 15*60*1000);
 setInterval(() => fetchXOM(), 15*60*1000);
-setInterval(() => fetchAO27(), 15*60*1000);
 </script>
 </body>
 </html>
