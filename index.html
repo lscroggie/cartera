@@ -255,8 +255,12 @@
         <div class="card-sub" style="margin-bottom:6px">total en USD</div>
         <div class="card-val" id="cripto-saldo">—</div>
         <div class="card-sub">saldo en ARS</div>
-        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="fetchCripto()">↻ actualizar</button></div>
+        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;">
+          <button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="fetchCripto()">↻ actualizar</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" id="cripto-toggle-btn" onclick="toggleCriptoBreakdown()">▾ desglose</button>
+        </div>
         <div style="font-size:10px;color:#454952;margin-top:5px" id="cripto-status">no cargado</div>
+        <div id="cripto-breakdown" style="display:none; margin-top:8px; border-top:1px solid #2a2d34; padding-top:8px;"></div>
       </div>
       <div class="card-patrimonio">
         <div class="card-label">💵 Fondos Balanz (saldo USD)</div>
@@ -600,6 +604,8 @@ const CRIPTO_HOLDINGS = [
 ];
 
 let criptoTotalUSD = 0;
+let criptoBreakdown = [];
+let criptoBreakdownVisible = false;
 
 async function fetchXOM() {
   const statusEl = document.getElementById('xom-status');
@@ -624,22 +630,59 @@ async function fetchCripto() {
   document.getElementById('cripto-status').textContent = '⟳ consultando CoinGecko…';
   try {
     const ids = CRIPTO_HOLDINGS.map(h => h.id).join(',');
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
     const res = await fetchWithTimeout(url, 10000);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const prices = await res.json();
     let total = 0;
-    CRIPTO_HOLDINGS.forEach(h => {
+    const breakdown = CRIPTO_HOLDINGS.map(h => {
       const px = prices[h.id]?.usd || 0;
-      total += px * h.qty;
-    });
+      const change24h = prices[h.id]?.usd_24h_change;
+      const valueUSD = px * h.qty;
+      total += valueUSD;
+      return {
+        id: h.id,
+        name: CRIPTO_DISPLAY_NAMES[h.id] || h.id,
+        qty: h.qty,
+        price: px,
+        valueUSD,
+        change24h: Number.isFinite(change24h) ? change24h : null,
+      };
+    }).sort((a, b) => b.valueUSD - a.valueUSD);
+
     criptoTotalUSD = total;
+    criptoBreakdown = breakdown;
     document.getElementById('cripto-usd-val').textContent = fUSD(total);
     document.getElementById('cripto-status').textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR');
+    renderCriptoBreakdown();
     recalcPatrimonio();
   } catch(e) {
     document.getElementById('cripto-status').textContent = '🔴 error: ' + e.message;
   }
+}
+
+function toggleCriptoBreakdown() {
+  criptoBreakdownVisible = !criptoBreakdownVisible;
+  const el = document.getElementById('cripto-breakdown');
+  const btn = document.getElementById('cripto-toggle-btn');
+  el.style.display = criptoBreakdownVisible ? '' : 'none';
+  btn.textContent = criptoBreakdownVisible ? '▴ ocultar' : '▾ desglose';
+}
+
+function renderCriptoBreakdown() {
+  const el = document.getElementById('cripto-breakdown');
+  if (!el || !criptoBreakdown.length) return;
+  el.innerHTML = criptoBreakdown.map(c => {
+    const changeTxt = c.change24h === null ? '—' : (c.change24h >= 0 ? '+' : '') + c.change24h.toFixed(1) + '%';
+    const changeColor = c.change24h === null ? '#454952' : (c.change24h >= 0 ? '#22c55e' : '#ef4444');
+    return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:3px 0;">
+      <span style="color:#c9ccd3">${c.name}</span>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <span style="color:${changeColor};font-size:10px;min-width:40px;text-align:right">${changeTxt}</span>
+        <span style="color:#f59e0b;font-weight:600;min-width:60px;text-align:right">${fUSD(c.valueUSD)}</span>
+      </span>
+    </div>`;
+  }).join('');
 }
 
 function getBalanzTotalUSD() {
