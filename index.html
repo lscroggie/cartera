@@ -208,7 +208,7 @@
     <div class="geo-card tech">
       <div class="card-label">💻 Concentración Tech/Growth</div>
       <div class="card-val neutral" id="tech-pct">—</div>
-      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + EWY + SMH</div>
+      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + EWY + GOOGL</div>
       <div class="geo-bar-track"><div class="geo-bar-fill" id="tech-bar" style="width:0%;background:linear-gradient(90deg,#22d3ee,#6366f1)"></div></div>
       <div class="geo-target">Sin límite fijo — mirar en conjunto con el resto</div>
     </div>
@@ -778,7 +778,6 @@ const TICKER_INFO = {
   EFA:  "iShares MSCI EAFE ETF — acciones de mercados desarrollados fuera de EE.UU./Canadá (Europa, Japón, Australia)",
   EWY:  "iShares MSCI South Korea ETF — acciones surcoreanas (Samsung, SK Hynix, Hyundai, entre otras)",
   VIG:  "Vanguard Dividend Appreciation ETF — empresas con historial de aumentar dividendos año tras año",
-  RSP:  "Invesco S&P 500 Equal Weight ETF — el S&P 500 pero con el mismo peso para cada empresa (no dominado por las gigantes tech)",
   XLV:  "Health Care Select Sector SPDR — sector salud de EE.UU. (farmacéuticas, seguros médicos, equipamiento)",
   XLP:  "Consumer Staples Select Sector SPDR — consumo masivo/defensivo (alimentos, higiene, bebidas)",
   XLI:  "Industrial Select Sector SPDR — sector industrial (manufactura, transporte, defensa, maquinaria)",
@@ -792,10 +791,10 @@ const TICKER_INFO = {
   ADBE: "Adobe Inc — software creativo y de marketing (Photoshop, Premiere, Creative Cloud)",
   NVDA: "Nvidia Corp — diseño de GPUs, líder en chips para IA",
   ANET: "Arista Networks Inc — switches y redes de alta velocidad para data centers",
+  GOOGL:"Alphabet Inc (Google) — buscador, publicidad digital, Google Cloud y desarrollo de IA (Gemini)",
   XOM:  "ExxonMobil — una de las mayores petroleras integradas del mundo",
   AO27: "Bono soberano argentino en dólares, ley Argentina, vencimiento 2027",
   SPHQ: "Invesco S&P 500 Quality ETF — empresas del S&P 500 seleccionadas por calidad (ROE alto, deuda baja, ganancias estables)",
-  SMH:  "VanEck Semiconductor ETF — las principales empresas de semiconductores globales (TSMC, Nvidia, ASML, Broadcom, etc.)",
   CVS:  "CVS Health Corp — cadena de farmacias, PBM (Caremark) y aseguradora de salud (Aetna) de EE.UU.",
 };
 
@@ -811,7 +810,7 @@ const TECH_CLASSIFICATION = {
   NVDA: 'tech',
   ANET: 'tech',
   EWY: 'tech',
-  SMH: 'tech',
+  GOOGL: 'tech',
 };
 
 const SECTOR_CLASSIFICATION = {
@@ -826,13 +825,12 @@ const SECTOR_CLASSIFICATION = {
   ADBE: 'Tecnología',
   NVDA: 'Tecnología',
   ANET: 'Tecnología',
-  SMH: 'Tecnología',
+  GOOGL: 'Tecnología',
   EFA: 'Internacional',
   EEM: 'Internacional',
   EWY: 'Internacional',
   IBIT: 'Cripto',
   IVV: 'Diversificado',
-  RSP: 'Diversificado',
   IVE: 'Diversificado',
   VIG: 'Diversificado',
   SPHQ: 'Diversificado',
@@ -840,7 +838,7 @@ const SECTOR_CLASSIFICATION = {
 };
 
 const SECTOR_DESCRIPTIONS = {
-  'Tecnología': 'Software y hardware ligados al ciclo de IA/growth: gestión empresarial, creatividad, chips y redes de datacenter, más exposición directa al sector semiconductor vía SMH.',
+  'Tecnología': 'Software y hardware ligados al ciclo de IA/growth: gestión empresarial, creatividad, chips y redes de datacenter, más exposición directa a búsqueda/publicidad/cloud/IA vía GOOGL.',
   'Internacional': 'Exposición fuera de EE.UU.: mercados desarrollados, emergentes y Corea del Sur. Es tu pata de diversificación geográfica.',
   'Utilities': 'Eléctricas y gas de EE.UU. Sector defensivo, cada vez más ligado a la demanda de energía de los data centers de IA.',
   'Financiero': 'Bancos, aseguradoras y financieras de EE.UU. Sensible a tasas de interés y ciclo económico.',
@@ -910,7 +908,7 @@ function calcTechConcentracion(posArr) {
 function renderTechCards() {
   const t = calcTechConcentracion(positions);
   document.getElementById('tech-pct').textContent = fPct(t.pctTech, false);
-  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + EWY + SMH · ' + fARS(t.montoTech);
+  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + EWY + GOOGL · ' + fARS(t.montoTech);
   document.getElementById('tech-bar').style.width = Math.min(100, t.pctTech) + '%';
 
   document.getElementById('nontech-pct').textContent = fPct(t.pctResto, false);
