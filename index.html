@@ -246,6 +246,8 @@
         <div class="pat-hint">450 nominales · precio c/100 VN · editable manualmente</div>
         <div class="card-val" id="ao27-saldo" style="margin-top:8px">—</div>
         <div class="card-sub">saldo en ARS</div>
+        <div class="card-val" id="ao27-resultado" style="margin-top:4px;font-size:13px">—</div>
+        <div class="card-sub">resultado vs. compra ($702.843,75)</div>
         <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="cargarTodo()">↻ actualizar</button></div>
         <div style="font-size:10px;color:#454952;margin-top:5px" id="ao27-status">no cargado</div>
       </div>
@@ -255,6 +257,8 @@
         <div class="pat-hint">100 nominales · precio c/100 VN · editable manualmente</div>
         <div class="card-val" id="ao28-saldo" style="margin-top:8px">—</div>
         <div class="card-sub">saldo en ARS</div>
+        <div class="card-val" id="ao28-resultado" style="margin-top:4px;font-size:13px">—</div>
+        <div class="card-sub">resultado vs. compra ($145.041,48)</div>
         <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="cargarTodo()">↻ actualizar</button></div>
         <div style="font-size:10px;color:#454952;margin-top:5px" id="ao28-status">no cargado</div>
       </div>
@@ -264,6 +268,8 @@
         <div class="pat-hint">223.771 nominales · precio c/100 VN · editable manualmente</div>
         <div class="card-val" id="x30n6-saldo" style="margin-top:8px">—</div>
         <div class="card-sub">saldo en ARS</div>
+        <div class="card-val" id="x30n6-resultado" style="margin-top:4px;font-size:13px">—</div>
+        <div class="card-sub">resultado vs. compra ($275.992,05)</div>
         <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="cargarTodo()">↻ actualizar</button></div>
         <div style="font-size:10px;color:#454952;margin-top:5px" id="x30n6-status">no cargado</div>
       </div>
@@ -347,6 +353,9 @@ const COLORS = ["#6366f1","#8b5cf6","#22d3ee","#3b82f6","#10b981","#f59e0b","#ef
 let positions = [], summary = {}, sortKey = 'winLoss', sortDir = -1;
 let currentUrl = DEFAULT_URL, lastUpdate = null, colorMap = {};
 let cclValue = 0;
+const AO27_COSTO_COMPRA = 702843.75; // 156.187,50 c/100 VN × 450 nominales
+const AO28_COSTO_COMPRA = 145041.48;
+const X30N6_COSTO_COMPRA = 275992.05;
 
 function parseNum(s) {
   if (!s) return 0;
@@ -761,8 +770,41 @@ function recalcPatrimonio() {
 
   document.getElementById('xom-saldo').textContent    = xomARS    > 0 ? fARS(xomARS)    : '—';
   document.getElementById('ao27-saldo').textContent   = ao27ARS   > 0 ? fARS(ao27ARS)   : '—';
+
+  const ao27El = document.getElementById('ao27-resultado');
+  if (ao27ARS > 0) {
+    const ao27Res = ao27ARS - AO27_COSTO_COMPRA;
+    const ao27Pct = (ao27Res / AO27_COSTO_COMPRA) * 100;
+    ao27El.textContent = fARS(ao27Res, true) + '  (' + fPct(ao27Pct) + ')';
+    ao27El.className = 'card-val ' + (ao27Res >= 0 ? 'pos' : 'neg');
+  } else {
+    ao27El.textContent = '—';
+    ao27El.className = 'card-val';
+  }
   document.getElementById('ao28-saldo').textContent   = ao28ARS   > 0 ? fARS(ao28ARS)   : '—';
   document.getElementById('x30n6-saldo').textContent  = x30n6ARS  > 0 ? fARS(x30n6ARS)  : '—';
+
+  const ao28El = document.getElementById('ao28-resultado');
+  if (ao28ARS > 0) {
+    const ao28Res = ao28ARS - AO28_COSTO_COMPRA;
+    const ao28Pct = (ao28Res / AO28_COSTO_COMPRA) * 100;
+    ao28El.textContent = fARS(ao28Res, true) + '  (' + fPct(ao28Pct) + ')';
+    ao28El.className = 'card-val ' + (ao28Res >= 0 ? 'pos' : 'neg');
+  } else {
+    ao28El.textContent = '—';
+    ao28El.className = 'card-val';
+  }
+
+  const x30n6El = document.getElementById('x30n6-resultado');
+  if (x30n6ARS > 0) {
+    const x30n6Res = x30n6ARS - X30N6_COSTO_COMPRA;
+    const x30n6Pct = (x30n6Res / X30N6_COSTO_COMPRA) * 100;
+    x30n6El.textContent = fARS(x30n6Res, true) + '  (' + fPct(x30n6Pct) + ')';
+    x30n6El.className = 'card-val ' + (x30n6Res >= 0 ? 'pos' : 'neg');
+  } else {
+    x30n6El.textContent = '—';
+    x30n6El.className = 'card-val';
+  }
   document.getElementById('cripto-saldo').textContent = criptoARS > 0 ? fARS(criptoARS) : '—';
   document.getElementById('balanz-usd-val').textContent = balanzUSD > 0 ? fUSD(balanzUSD) : '—';
   document.getElementById('balanz-saldo').textContent   = balanzARS > 0 ? fARS(balanzARS) : '—';
