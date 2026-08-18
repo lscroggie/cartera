@@ -250,6 +250,24 @@
         <div style="font-size:10px;color:#454952;margin-top:5px" id="ao27-status">no cargado</div>
       </div>
       <div class="card-patrimonio">
+        <div class="card-label">AO28 · Bono soberano ARG 2028</div>
+        <div style="margin-top:4px"><input class="pat-input" id="ao28-precio" type="number" placeholder="precio c/100 nominales ARS" oninput="recalcPatrimonio()"/></div>
+        <div class="pat-hint">100 nominales · precio c/100 VN · editable manualmente</div>
+        <div class="card-val" id="ao28-saldo" style="margin-top:8px">—</div>
+        <div class="card-sub">saldo en ARS</div>
+        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="cargarTodo()">↻ actualizar</button></div>
+        <div style="font-size:10px;color:#454952;margin-top:5px" id="ao28-status">no cargado</div>
+      </div>
+      <div class="card-patrimonio">
+        <div class="card-label">X30N6 · Bono CER</div>
+        <div style="margin-top:4px"><input class="pat-input" id="x30n6-precio" type="number" placeholder="precio c/100 nominales ARS" oninput="recalcPatrimonio()"/></div>
+        <div class="pat-hint">223.771 nominales · precio c/100 VN · editable manualmente</div>
+        <div class="card-val" id="x30n6-saldo" style="margin-top:8px">—</div>
+        <div class="card-sub">saldo en ARS</div>
+        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;"><button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="cargarTodo()">↻ actualizar</button></div>
+        <div style="font-size:10px;color:#454952;margin-top:5px" id="x30n6-status">no cargado</div>
+      </div>
+      <div class="card-patrimonio">
         <div class="card-label">₿ Cripto · CoinGecko</div>
         <div class="card-val" id="cripto-usd-val" style="margin-top:8px; font-size:15px; color:#f59e0b">—</div>
         <div class="card-sub" style="margin-bottom:6px">total en USD</div>
@@ -418,7 +436,7 @@ async function fetchCSV(sheetName) {
 function parseSheetData(raw) {
   const rows = parseCSV(raw);
 
-  let sumInv = 0, sumSaldo = 0, sumRes = 0, sumRend = 0, sumUSD = 0, ccl = 0, ao27 = 0;
+  let sumInv = 0, sumSaldo = 0, sumRes = 0, sumRend = 0, sumUSD = 0, ccl = 0, ao27 = 0, ao28 = 0, x30n6 = 0;
   rows.forEach((r, idx) => {
     const lbl = (r[0]||'').trim().toLowerCase();
     if (/^invertido/.test(lbl))     sumInv   = parseNum(r[2]);
@@ -434,11 +452,25 @@ function parseSheetData(raw) {
         ccl = possibleCCL;
       }
 
-      // Columna I (índice 8): precio del AO27, actualizado por Apps Script (actualizarAO27) vía data912.com.
+      // Columna I (índice 8): precio del AO27, actualizado por Apps Script (actualizarBonos) vía data912.com.
       var rawAO27 = String(r[8] || '').replace(/['"]/g, '').trim().replace(',', '.');
       var possibleAO27 = parseFloat(rawAO27);
       if (!isNaN(possibleAO27) && possibleAO27 > 10000 && possibleAO27 < 1000000) {
         ao27 = possibleAO27;
+      }
+
+      // Columna J (índice 9): precio del AO28, actualizado por Apps Script (actualizarBonos) vía data912.com.
+      var rawAO28 = String(r[9] || '').replace(/['"]/g, '').trim().replace(',', '.');
+      var possibleAO28 = parseFloat(rawAO28);
+      if (!isNaN(possibleAO28) && possibleAO28 > 10000 && possibleAO28 < 1000000) {
+        ao28 = possibleAO28;
+      }
+
+      // Columna K (índice 10): precio del bono CER X30N6, actualizado por Apps Script (actualizarBonos) vía data912.com.
+      var rawX30N6 = String(r[10] || '').replace(/['"]/g, '').trim().replace(',', '.');
+      var possibleX30N6 = parseFloat(rawX30N6);
+      if (!isNaN(possibleX30N6) && possibleX30N6 > 10 && possibleX30N6 < 10000) {
+        x30n6 = possibleX30N6;
       }
     }
   });
@@ -512,7 +544,7 @@ function parseSheetData(raw) {
     saldoUSD:    sumUSD    || pos.reduce((s, p) => s + p.saldoUSD, 0)
   };
 
-  return { positions: pos, summary: summaryOut, ccl, xomPrice, ao27 };
+  return { positions: pos, summary: summaryOut, ccl, xomPrice, ao27, ao28, x30n6 };
 }
 
 // Asigna un color estable por símbolo, en el orden en que aparecen las posiciones.
@@ -529,7 +561,7 @@ async function fetchLive() {
   document.getElementById('error-box').style.display = 'none';
   try {
     const raw = await fetchCSV('lista de seguimiento');
-    const { positions: rawPos, ccl, xomPrice, ao27 } = parseSheetData(raw);
+    const { positions: rawPos, ccl, xomPrice, ao27, ao28, x30n6 } = parseSheetData(raw);
 
     positions = excluirManejadosAparte(rawPos);
     summary = recalcularSummary(positions);
@@ -552,6 +584,22 @@ async function fetchLive() {
       ao27StatusEl.textContent = '🔴 sin dato del sheet · podés cargarlo manual';
     }
 
+    const ao28StatusEl = document.getElementById('ao28-status');
+    if (ao28 > 0) {
+      document.getElementById('ao28-precio').value = ao28;
+      if (ao28StatusEl) ao28StatusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · data912 · $ ' + Math.round(ao28).toLocaleString('es-AR');
+    } else if (ao28StatusEl) {
+      ao28StatusEl.textContent = '🔴 sin dato del sheet · podés cargarlo manual';
+    }
+
+    const x30n6StatusEl = document.getElementById('x30n6-status');
+    if (x30n6 > 0) {
+      document.getElementById('x30n6-precio').value = x30n6;
+      if (x30n6StatusEl) x30n6StatusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · data912 · $ ' + x30n6.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 5});
+    } else if (x30n6StatusEl) {
+      x30n6StatusEl.textContent = '🔴 sin dato del sheet · podés cargarlo manual';
+    }
+
     lastUpdate = new Date();
     setStatus('live');
     assignColorMap();
@@ -567,7 +615,7 @@ async function fetchLive() {
 // Símbolos que se gestionan manualmente en la sección Patrimonio (con su propio input de precio)
 // y por lo tanto NUNCA deben contarse en el capital invertido / resultado de la tabla de CEDEARs,
 // aunque aparezcan cargados como fila en el sheet.
-const SYMBOLS_MANEJADOS_APARTE = ['AO27'];
+const SYMBOLS_MANEJADOS_APARTE = ['AO27', 'AO28', 'X30N6'];
 
 function excluirManejadosAparte(pos) {
   return pos.filter(p => !SYMBOLS_MANEJADOS_APARTE.includes(p.symbol.toUpperCase()));
@@ -696,6 +744,8 @@ function recalcPatrimonio() {
   const ccl     = parseFloat(document.getElementById('ccl-input').value) || cclValue || 0;
   const xomPx   = parseFloat(document.getElementById('xom-precio').value) || 0;
   const ao27Px  = parseFloat(document.getElementById('ao27-precio').value) || 0;
+  const ao28Px  = parseFloat(document.getElementById('ao28-precio').value) || 0;
+  const x30n6Px = parseFloat(document.getElementById('x30n6-precio').value) || 0;
   const balanzUSD = getBalanzTotalUSD();
 
   if (ccl > 0) {
@@ -704,17 +754,21 @@ function recalcPatrimonio() {
 
   const xomARS    = xomPx    > 0 ? 50 * xomPx * ccl : 0;
   const ao27ARS   = ao27Px   > 0 ? (ao27Px / 100) * 450 : 0;
+  const ao28ARS   = ao28Px   > 0 ? (ao28Px / 100) * 100 : 0;
+  const x30n6ARS  = x30n6Px  > 0 ? (x30n6Px / 100) * 223771 : 0;
   const criptoARS = criptoTotalUSD > 0 ? criptoTotalUSD * ccl : 0;
   const balanzARS = balanzUSD > 0 ? balanzUSD * ccl : 0;
 
   document.getElementById('xom-saldo').textContent    = xomARS    > 0 ? fARS(xomARS)    : '—';
   document.getElementById('ao27-saldo').textContent   = ao27ARS   > 0 ? fARS(ao27ARS)   : '—';
+  document.getElementById('ao28-saldo').textContent   = ao28ARS   > 0 ? fARS(ao28ARS)   : '—';
+  document.getElementById('x30n6-saldo').textContent  = x30n6ARS  > 0 ? fARS(x30n6ARS)  : '—';
   document.getElementById('cripto-saldo').textContent = criptoARS > 0 ? fARS(criptoARS) : '—';
   document.getElementById('balanz-usd-val').textContent = balanzUSD > 0 ? fUSD(balanzUSD) : '—';
   document.getElementById('balanz-saldo').textContent   = balanzARS > 0 ? fARS(balanzARS) : '—';
 
   const cedarSaldo = summary.saldoPesos || 0;
-  const total = cedarSaldo + xomARS + ao27ARS + criptoARS + balanzARS;
+  const total = cedarSaldo + xomARS + ao27ARS + ao28ARS + x30n6ARS + criptoARS + balanzARS;
   const totalUSD = ccl > 0 ? total / ccl : 0;
 
   document.getElementById('pat-total').textContent = total > 0 ? fARS(total) : '—';
@@ -794,6 +848,8 @@ const TICKER_INFO = {
   GOOGL:"Alphabet Inc (Google) — buscador, publicidad digital, Google Cloud y desarrollo de IA (Gemini)",
   XOM:  "ExxonMobil — una de las mayores petroleras integradas del mundo",
   AO27: "Bono soberano argentino en dólares, ley Argentina, vencimiento 2027",
+  AO28: "Bono soberano argentino en dólares, ley Argentina, vencimiento 2028",
+  X30N6: "Lecer — Letra del Tesoro argentina ajustada por CER (inflación), vencimiento 30/11/2026",
   SPHQ: "Invesco S&P 500 Quality ETF — empresas del S&P 500 seleccionadas por calidad (ROE alto, deuda baja, ganancias estables)",
   CVS:  "CVS Health Corp — cadena de farmacias, PBM (Caremark) y aseguradora de salud (Aetna) de EE.UU.",
 };
@@ -1049,7 +1105,7 @@ const CRIPTO_DISPLAY_NAMES = {
 // Patrimonio (no vienen del sheet, así que van hardcodeadas).
 function renderAssetSummary() {
   const cedearCount = positions.length;
-  const bonoSoberano = 1;      // AO27
+  const bonoSoberano = 3;      // AO27, AO28, X30N6
   const accionNYSE = 1;        // XOM
   const fciCount = 1;          // Fondos Balanz (Dólar Corto Plazo)
   const criptoCount = CRIPTO_HOLDINGS.length;
@@ -1061,7 +1117,7 @@ function renderAssetSummary() {
 
   const chips = [
     { label: 'CEDEARs/ETFs', val: cedearCount, detail: cedearNames },
-    { label: 'bono soberano', val: bonoSoberano, detail: 'AO27 (bono soberano argentino en dólares, venc. 2027)' },
+    { label: 'bono soberano', val: bonoSoberano, detail: 'AO27, AO28 (dólares) y X30N6 (Lecer, ajustado por CER)' },
     { label: 'acción NYSE', val: accionNYSE, detail: 'XOM (ExxonMobil)' },
     { label: 'FCI', val: fciCount, detail: fciNames },
     { label: 'criptomonedas', val: criptoCount, detail: criptoNames },
