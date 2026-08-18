@@ -147,6 +147,24 @@
   .geo-target { font-size: 8.5px; color: #64748b; margin-top: 4px; }
   @media (max-width: 1100px) { .patrimonio-grid { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 700px) { .rankings { grid-template-columns: 1fr; } }
+  .hero-patrimonio {
+    background: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 100%);
+    border: 1px solid #6366f1;
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 10px rgba(99,102,241,0.18);
+  }
+  .hero-patrimonio-label { font-size: 11px; color: #c7d2fe; letter-spacing: 0.4px; text-transform: uppercase; font-weight: 600; }
+  .hero-patrimonio-val { font-size: 22px; font-weight: 800; color: #ffffff; line-height: 1; }
+  .hero-patrimonio-usd { font-size: 12.5px; color: #93c5fd; font-weight: 600; }
+  .hero-patrimonio-sub { font-size: 9.5px; color: #a5b4fc; width: 100%; text-align: center; margin-top: 2px; }
+  @media (max-width: 700px) { .hero-patrimonio-val { font-size: 19px; } }
 </style>
 </head>
 <body>
@@ -159,6 +177,13 @@
     <div class="hbtns">
       <button class="btn btn-ghost btn-sm" onclick="doRefresh()">↻ Refresh</button>
     </div>
+  </div>
+
+  <div class="hero-patrimonio">
+    <span class="hero-patrimonio-label">🏦 Patrimonio total</span>
+    <span class="hero-patrimonio-val" id="pat-total">—</span>
+    <span class="hero-patrimonio-usd" id="pat-usd">— USD</span>
+    <span class="hero-patrimonio-sub">CEDEARs + XOM + AO27 + AO28 + X30N6 + Cripto + Fondos</span>
   </div>
 
   <div class="asset-summary" id="asset-summary"></div>
@@ -295,11 +320,8 @@
         <div class="card-sub">saldo en ARS</div>
       </div>
       <div class="card-patrimonio total">
-        <div class="card-label">Patrimonio total</div>
-        <div class="card-val" id="pat-total">—</div>
-        <div class="card-sub">CEDEARs + XOM + AO27 + Cripto + Fondos</div>
-        <div style="margin-top:8px; font-size:11px; color:#3b82f6" id="pat-usd">— USD</div>
-        <div class="ccl-inline">
+        <div class="card-label">CCL usado en Patrimonio</div>
+        <div class="ccl-inline" style="margin-top:8px;border-top:none;padding-top:0">
           <label for="ccl-input">CCL</label>
           <input class="pat-input" id="ccl-input" type="number" placeholder="CCL" oninput="recalcPatrimonio()"/>
           <span id="ccl-display">—</span>
