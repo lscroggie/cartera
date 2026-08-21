@@ -216,7 +216,7 @@
     <div class="geo-card nonus">
       <div class="card-label">🌍 Concentración Non-US</div>
       <div class="card-val neutral" id="geo-nonus-pct">—</div>
-      <div class="card-sub" id="geo-nonus-monto">EFA + EEM + EWY</div>
+      <div class="card-sub" id="geo-nonus-monto">EFA + EEM</div>
       <div class="geo-bar-track"><div class="geo-bar-fill" id="geo-nonus-bar" style="width:0%;background:linear-gradient(90deg,#f59e0b,#ec4899)"></div></div>
       <div class="geo-target">Target: 20%–25%</div>
     </div>
@@ -233,7 +233,7 @@
     <div class="geo-card tech">
       <div class="card-label">💻 Concentración Tech/Growth</div>
       <div class="card-val neutral" id="tech-pct">—</div>
-      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + EWY + GOOGL</div>
+      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + GOOGL</div>
       <div class="geo-bar-track"><div class="geo-bar-fill" id="tech-bar" style="width:0%;background:linear-gradient(90deg,#22d3ee,#6366f1)"></div></div>
       <div class="geo-target">Sin límite fijo — mirar en conjunto con el resto</div>
     </div>
@@ -894,7 +894,6 @@ const TICKER_INFO = {
   IVV:  "iShares Core S&P 500 ETF — las 500 empresas más grandes de EE.UU.",
   EEM:  "iShares MSCI Emerging Markets ETF — acciones de mercados emergentes (China, India, Brasil, etc.)",
   EFA:  "iShares MSCI EAFE ETF — acciones de mercados desarrollados fuera de EE.UU./Canadá (Europa, Japón, Australia)",
-  EWY:  "iShares MSCI South Korea ETF — acciones surcoreanas (Samsung, SK Hynix, Hyundai, entre otras)",
   VIG:  "Vanguard Dividend Appreciation ETF — empresas con historial de aumentar dividendos año tras año",
   XLV:  "Health Care Select Sector SPDR — sector salud de EE.UU. (farmacéuticas, seguros médicos, equipamiento)",
   XLP:  "Consumer Staples Select Sector SPDR — consumo masivo/defensivo (alimentos, higiene, bebidas)",
@@ -921,7 +920,6 @@ const TICKER_INFO = {
 const GEO_CLASSIFICATION = {
   EFA: 'non-us',
   EEM: 'non-us',
-  EWY: 'non-us',
 };
 
 const TECH_CLASSIFICATION = {
@@ -929,7 +927,6 @@ const TECH_CLASSIFICATION = {
   ADBE: 'tech',
   NVDA: 'tech',
   ANET: 'tech',
-  EWY: 'tech',
   GOOGL: 'tech',
 };
 
@@ -948,7 +945,6 @@ const SECTOR_CLASSIFICATION = {
   GOOGL: 'Tecnología',
   EFA: 'Internacional',
   EEM: 'Internacional',
-  EWY: 'Internacional',
   IBIT: 'Cripto',
   IVV: 'Diversificado',
   IVE: 'Diversificado',
@@ -959,7 +955,7 @@ const SECTOR_CLASSIFICATION = {
 
 const SECTOR_DESCRIPTIONS = {
   'Tecnología': 'Software y hardware ligados al ciclo de IA/growth: gestión empresarial, creatividad, chips y redes de datacenter, más exposición directa a búsqueda/publicidad/cloud/IA vía GOOGL.',
-  'Internacional': 'Exposición fuera de EE.UU.: mercados desarrollados, emergentes y Corea del Sur. Es tu pata de diversificación geográfica.',
+  'Internacional': 'Exposición fuera de EE.UU.: mercados desarrollados y emergentes. Es tu pata de diversificación geográfica.',
   'Utilities': 'Eléctricas y gas de EE.UU. Sector defensivo, cada vez más ligado a la demanda de energía de los data centers de IA.',
   'Financiero': 'Bancos, aseguradoras y financieras de EE.UU. Sensible a tasas de interés y ciclo económico.',
   'Energía': 'Petroleras y gasíferas de EE.UU. Correlaciona con el precio del petróleo, buen hedge inflacionario.',
@@ -1028,7 +1024,7 @@ function calcTechConcentracion(posArr) {
 function renderTechCards() {
   const t = calcTechConcentracion(positions);
   document.getElementById('tech-pct').textContent = fPct(t.pctTech, false);
-  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + EWY + GOOGL · ' + fARS(t.montoTech);
+  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + GOOGL · ' + fARS(t.montoTech);
   document.getElementById('tech-bar').style.width = Math.min(100, t.pctTech) + '%';
 
   document.getElementById('nontech-pct').textContent = fPct(t.pctResto, false);
@@ -1054,7 +1050,7 @@ function calcGeoConcentracion(posArr) {
 function renderGeoCards() {
   const geo = calcGeoConcentracion(positions);
   document.getElementById('geo-nonus-pct').textContent = fPct(geo.pctNonUS, false);
-  document.getElementById('geo-nonus-monto').textContent = 'EFA + EEM + EWY · ' + fARS(geo.montoNonUS);
+  document.getElementById('geo-nonus-monto').textContent = 'EFA + EEM · ' + fARS(geo.montoNonUS);
   document.getElementById('geo-nonus-bar').style.width = Math.min(100, geo.pctNonUS) + '%';
 
   document.getElementById('geo-us-pct').textContent = fPct(geo.pctUS, false);
