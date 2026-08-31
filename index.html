@@ -1004,7 +1004,10 @@ function renderSectorDist() {
         <span class="sector-pct">${d.pct.toFixed(1)}% · ${fARS(d.monto)}</span>
       </div>
       <div class="sector-bar-track"><div class="sector-bar-fill" style="width:${widthPct}%;background:${color}"></div></div>
-      <div class="sector-detail"><b>${d.tickers.join(', ')}</b>${desc ? ' — <em>' + desc + '</em>' : ''}</div>
+      <div class="sector-detail"><b>${d.tickers.map(t => {
+        const info = TICKER_INFO[t];
+        return info ? `<span title="${info.replace(/"/g,'&quot;')}" style="cursor:help;text-decoration:underline dotted;text-underline-offset:2px">${t}</span>` : t;
+      }).join(', ')}</b>${desc ? ' — <em>' + desc + '</em>' : ''}</div>
     </div>`;
   }).join('');
 }
