@@ -233,7 +233,7 @@
     <div class="geo-card tech">
       <div class="card-label">💻 Concentración Tech/Growth</div>
       <div class="card-val neutral" id="tech-pct">—</div>
-      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + GOOGL</div>
+      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + GOOGL + AVGO</div>
       <div class="geo-bar-track"><div class="geo-bar-fill" id="tech-bar" style="width:0%;background:linear-gradient(90deg,#22d3ee,#6366f1)"></div></div>
       <div class="geo-target">Sin límite fijo — mirar en conjunto con el resto</div>
     </div>
@@ -909,6 +909,7 @@ const TICKER_INFO = {
   NVDA: "Nvidia Corp — diseño de GPUs, líder en chips para IA",
   ANET: "Arista Networks Inc — switches y redes de alta velocidad para data centers",
   GOOGL:"Alphabet Inc (Google) — buscador, publicidad digital, Google Cloud y desarrollo de IA (Gemini)",
+  AVGO: "Broadcom Inc — semiconductores (chips de red y ASICs custom para IA) y software empresarial (VMware)",
   XOM:  "ExxonMobil — una de las mayores petroleras integradas del mundo",
   AO27: "Bono soberano argentino en dólares, ley Argentina, vencimiento 2027",
   AO28: "Bono soberano argentino en dólares, ley Argentina, vencimiento 2028",
@@ -928,6 +929,7 @@ const TECH_CLASSIFICATION = {
   NVDA: 'tech',
   ANET: 'tech',
   GOOGL: 'tech',
+  AVGO: 'tech',
 };
 
 const SECTOR_CLASSIFICATION = {
@@ -943,6 +945,7 @@ const SECTOR_CLASSIFICATION = {
   NVDA: 'Tecnología',
   ANET: 'Tecnología',
   GOOGL: 'Tecnología',
+  AVGO: 'Tecnología',
   EFA: 'Internacional',
   EEM: 'Internacional',
   IBIT: 'Cripto',
@@ -1024,7 +1027,7 @@ function calcTechConcentracion(posArr) {
 function renderTechCards() {
   const t = calcTechConcentracion(positions);
   document.getElementById('tech-pct').textContent = fPct(t.pctTech, false);
-  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + GOOGL · ' + fARS(t.montoTech);
+  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + GOOGL + AVGO · ' + fARS(t.montoTech);
   document.getElementById('tech-bar').style.width = Math.min(100, t.pctTech) + '%';
 
   document.getElementById('nontech-pct').textContent = fPct(t.pctResto, false);
