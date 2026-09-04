@@ -467,7 +467,7 @@ async function fetchCSV(sheetName) {
 function parseSheetData(raw) {
   const rows = parseCSV(raw);
 
-  let sumInv = 0, sumSaldo = 0, sumRes = 0, sumRend = 0, sumUSD = 0, ccl = 0, ao27 = 0, ao28 = 0, x30n6 = 0;
+  let sumInv = 0, sumSaldo = 0, sumRes = 0, sumRend = 0, sumUSD = 0, ccl = 0, ao27 = 0, ao28 = 0, x30n6 = 0, xomSheet = 0;
   rows.forEach((r, idx) => {
     const lbl = (r[0]||'').trim().toLowerCase();
     if (/^invertido/.test(lbl))     sumInv   = parseNum(r[2]);
@@ -503,6 +503,13 @@ function parseSheetData(raw) {
       if (!isNaN(possibleX30N6) && possibleX30N6 > 10 && possibleX30N6 < 10000) {
         x30n6 = possibleX30N6;
       }
+
+      // Columna L (índice 11): precio de XOM, actualizado por Apps Script (actualizarBonos) vía data912.com.
+      var rawXOMSheet = String(r[11] || '').replace(/['"]/g, '').trim().replace(',', '.');
+      var possibleXOMSheet = parseFloat(rawXOMSheet);
+      if (!isNaN(possibleXOMSheet) && possibleXOMSheet > 1 && possibleXOMSheet < 10000) {
+        xomSheet = possibleXOMSheet;
+      }
     }
   });
 
@@ -531,8 +538,9 @@ function parseSheetData(raw) {
 
   const iTipoIdx = colIdx(['tipo']);
   const xomRow = rows.slice(hi + 1).find(r => (r[iSym] || '').trim().toUpperCase() === 'XOM');
-  const xomPrice = xomRow ? parseNum(get_(xomRow, iPC)) : 0;
   function get_(r, i) { return (i >= 0 && i < r.length) ? (r[i] || '') : ''; }
+  let xomPrice = xomRow ? parseNum(get_(xomRow, iPC)) : 0;
+  xomPrice = xomSheet || xomPrice;
 
   const dataRows = rows.slice(hi + 1).filter(r => {
     const sym = (r[iSym] || '').trim();
@@ -629,6 +637,11 @@ async function fetchLive() {
       if (x30n6StatusEl) x30n6StatusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · data912 · $ ' + x30n6.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 5});
     } else if (x30n6StatusEl) {
       x30n6StatusEl.textContent = '🔴 sin dato del sheet · podés cargarlo manual';
+    }
+
+    if (xomPrice > 0) {
+      const xomStatusEl = document.getElementById('xom-status');
+      if (xomStatusEl) xomStatusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · data912 (sheet) · USD ' + xomPrice.toFixed(2);
     }
 
     lastUpdate = new Date();
