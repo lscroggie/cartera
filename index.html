@@ -308,8 +308,9 @@
         <div id="cripto-breakdown" style="display:none; margin-top:8px; border-top:1px solid #2a2d34; padding-top:8px;"></div>
       </div>
       <div class="card-patrimonio">
-        <div class="card-label">💵 Fondos Balanz (saldo USD)</div>
-        <div class="balanz-row"><label>Dólar Corto Plazo</label><input type="number" id="fb-0" oninput="recalcPatrimonio()" placeholder="0"/></div>
+        <div class="card-label">💵 Fondos (saldo USD)</div>
+        <div class="balanz-row"><label>Balanz · Dólar Corto Plazo</label><input type="number" id="fb-0" value="4027" oninput="recalcPatrimonio()" placeholder="0"/></div>
+        <div class="balanz-row"><label>Allaria · Retorno Total</label><input type="number" id="fb-1" value="145.48" oninput="recalcPatrimonio()" placeholder="0"/></div>
         <div class="card-val" id="balanz-usd-val" style="margin-top:8px; font-size:15px; color:#a78bfa">—</div>
         <div class="card-sub" style="margin-bottom:2px">total en USD</div>
         <div class="card-val" id="balanz-saldo">—</div>
@@ -775,8 +776,10 @@ function renderCriptoBreakdown() {
 
 function getBalanzTotalUSD() {
   let total = 0;
-  const el = document.getElementById('fb-0');
-  total += parseFloat(el && el.value) || 0;
+  ['fb-0', 'fb-1'].forEach(id => {
+    const el = document.getElementById(id);
+    total += parseFloat(el && el.value) || 0;
+  });
   return total;
 }
 
@@ -1185,13 +1188,13 @@ function renderAssetSummary() {
   const cedearCount = positions.length;
   const bonoSoberano = 3;      // AO27, AO28, X30N6
   const accionNYSE = 1;        // XOM
-  const fciCount = 1;          // Fondos Balanz (Dólar Corto Plazo)
+  const fciCount = 2;          // Fondos Balanz (Dólar Corto Plazo) + Allaria (Retorno Total)
   const criptoCount = CRIPTO_HOLDINGS.length;
   const total = cedearCount + bonoSoberano + accionNYSE + fciCount + criptoCount;
 
   const cedearNames = positions.length ? positions.map(p => p.symbol).join(', ') : 'cargando…';
   const criptoNames = CRIPTO_HOLDINGS.map(h => CRIPTO_DISPLAY_NAMES[h.id] || h.id).join(', ');
-  const fciNames = 'Balanz: Dólar Corto Plazo';
+  const fciNames = 'Balanz: Dólar Corto Plazo · Allaria: Retorno Total';
 
   const chips = [
     { label: 'CEDEARs/ETFs', val: cedearCount, detail: cedearNames },
