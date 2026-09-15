@@ -421,7 +421,7 @@ function parseCSV(text) {
   });
 }
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfdEiUw-GsiEZoC4nLafd745zxCyRJVbxDxqoZeN8nkUPtHu-jFmDw2ThDnZEFhNof/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDQzhNRQdUMTdQLkoYA-BIwKRq1o4TCKFSY9Vk4UX7wkMdWdIbgaI1jzlFDWoAiq5Y/exec';
 
 function fetchWithTimeout(url, ms) {
   return Promise.race([
@@ -850,6 +850,8 @@ const TICKER_INFO = {
   SPHQ: "Invesco S&P 500 Quality ETF — empresas del S&P 500 seleccionadas por calidad (ROE alto, deuda baja, ganancias estables)",
   CVS:  "CVS Health Corp — cadena de farmacias, PBM (Caremark) y aseguradora de salud (Aetna) de EE.UU.",
   SPCX: "Space Exploration Technologies Corp (SpaceX) — lanzadores reutilizables (Falcon 9/Heavy, Starship) y la red satelital Starlink",
+  MCD:  "McDonald's Corp — la cadena de comida rápida más grande del mundo, negocio principalmente de franquicias y bienes raíces",
+  BRKB: "Berkshire Hathaway Inc (clase B) — holding de Warren Buffett: seguros (GEICO), ferrocarriles (BNSF), energía y una cartera de acciones cotizantes",
 };
 
 const GEO_CLASSIFICATION = {
@@ -892,6 +894,8 @@ const SECTOR_CLASSIFICATION = {
   SPHQ: 'Diversificado',
   CVS: 'Salud',
   SPCX: 'Aeroespacial',
+  MCD: 'Consumo discrecional',
+  BRKB: 'Financiero',
 };
 
 const SECTOR_DESCRIPTIONS = {
