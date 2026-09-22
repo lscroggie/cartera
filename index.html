@@ -96,7 +96,7 @@
   td.bright { color: #f1f5f9; font-weight: 600; }
   td.pos { color: #34d399; font-weight: 700; }
   td.neg { color: #f87171; font-weight: 700; }
-  .sym { display: inline-block; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; color: #fff; white-space: nowrap; }
+  .sym { display: inline-block; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; color: #fff; white-space: nowrap; text-shadow: 0 1px 1px rgba(0,0,0,0.35); }
   .sym[title] { cursor: help; }
   .pct-badge { display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 12px; font-weight: 700; white-space: nowrap; }
   .pct-badge.pos { background: rgba(52,211,153,0.12); color: #34d399; }
@@ -516,7 +516,7 @@ function parseSheetData(raw) {
 
   const pos = dataRows.map((r) => {
     const symbol       = get(r, iSym).trim();
-    const activo       = get(r, iAct).trim();
+    const activo       = get(r, iAct).trim().replace(/\s*cedears?\b/i, '').trim();
     const cedears      = parseNum(get(r, iCed));
     const precioCedear = parseNum(get(r, iPC));
     const precioCompra = parseNum(get(r, iPCom));
@@ -904,7 +904,7 @@ const SECTOR_DESCRIPTIONS = {
   'Utilities': 'Eléctricas y gas de EE.UU. Sector defensivo, cada vez más ligado a la demanda de energía de los data centers de IA.',
   'Financiero': 'Bancos, aseguradoras y financieras de EE.UU. Sensible a tasas de interés y ciclo económico. Incluye a Berkshire Hathaway (BRKB), un holding diversificado (seguros, ferrocarriles, energía, cartera de acciones) con beta históricamente más bajo que el sector financiero promedio.',
   'Energía': 'Generación y distribución de energía, y petroleras/gasíferas. Correlaciona con el precio de la energía, buen hedge inflacionario.',
-  'Consumo discrecional': 'Retail, autos y ocio: gasto no esencial, más cíclico y sensible a la economía.',
+  'Consumo discrecional': 'Restaurantes, retail y ocio: gasto no esencial, más cíclico y sensible a la economía.',
   'Consumo defensivo': 'Alimentos, higiene y bebidas: gasto esencial, suele sostenerse mejor en recesiones.',
   'Industrial': 'Manufactura, transporte y maquinaria. Buen termómetro de la actividad económica real.',
   'Salud': 'Farmacéuticas, seguros médicos y equipamiento. Defensivo, con demanda relativamente estable.',
@@ -972,12 +972,19 @@ function calcTechConcentracion(posArr) {
 
 function renderTechCards() {
   const t = calcTechConcentracion(positions);
+  // Arma la lista de tickers "tech" a partir de las posiciones realmente en cartera,
+  // así nunca queda mencionado un ticker que ya se vendió (ej. ADBE, NOW).
+  const heldTech = positions
+    .filter(p => TECH_CLASSIFICATION[p.symbol] === 'tech')
+    .map(p => p.symbol);
+  const techLabel = heldTech.length ? heldTech.join(' + ') : 'Tech/Growth';
+
   document.getElementById('tech-pct').textContent = fPct(t.pctTech, false);
-  document.getElementById('tech-monto').textContent = 'NOW + ADBE + NVDA + ANET + GOOGL + AVGO · ' + fARS(t.montoTech);
+  document.getElementById('tech-monto').textContent = techLabel + ' · ' + fARS(t.montoTech);
   document.getElementById('tech-bar').style.width = Math.min(100, t.pctTech) + '%';
 
   document.getElementById('nontech-pct').textContent = fPct(t.pctResto, false);
-  document.getElementById('nontech-monto').textContent = 'ETFs + IBIT · ' + fARS(t.montoResto);
+  document.getElementById('nontech-monto').textContent = 'Resto de la cartera · ' + fARS(t.montoResto);
   document.getElementById('nontech-bar').style.width = Math.min(100, t.pctResto) + '%';
 }
 
@@ -1014,11 +1021,25 @@ function renderGeoCards() {
   }
 }
 
+// Elige texto blanco o negro según el brillo del color de fondo, para que el ticker
+// siempre se lea bien sin importar qué color del array COLORS le haya tocado.
+function contrastTextColor(hex) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? '#0f1117' : '#fff';
+}
+
 function symBadge(sym) {
   const ci = colorMap[sym] !== undefined ? colorMap[sym] : 0;
+  const bg = COLORS[ci % COLORS.length];
   const info = TICKER_INFO[sym];
   const titleAttr = info ? ` title="${info.replace(/"/g,'&quot;')}"` : '';
-  return `<span class="sym" style="background:${COLORS[ci % COLORS.length]}"${titleAttr}>${sym}</span>`;
+  const textColor = contrastTextColor(bg);
+  const shadow = textColor === '#fff' ? '0 1px 1px rgba(0,0,0,0.35)' : 'none';
+  return `<span class="sym" style="background:${bg};color:${textColor};text-shadow:${shadow}"${titleAttr}>${sym}</span>`;
 }
 
 function renderCards() {
