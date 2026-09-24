@@ -233,7 +233,7 @@
     <div class="geo-card tech">
       <div class="card-label">💻 Concentración Tech/Growth</div>
       <div class="card-val neutral" id="tech-pct">—</div>
-      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + GOOGL + AVGO</div>
+      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + GOOGL + AVGO + ALAB</div>
       <div class="geo-bar-track"><div class="geo-bar-fill" id="tech-bar" style="width:0%;background:linear-gradient(90deg,#22d3ee,#6366f1)"></div></div>
       <div class="geo-target">Sin límite fijo — mirar en conjunto con el resto</div>
     </div>
@@ -836,13 +836,13 @@ const TICKER_INFO = {
   XLF:  "Financial Select Sector SPDR — bancos, aseguradoras y financieras de EE.UU.",
   XLE:  "Energy Select Sector SPDR — petroleras y gasíferas de EE.UU.",
   XLY:  "Consumer Discretionary Select Sector SPDR — consumo no esencial de EE.UU. (retail, autos, ocio, e-commerce)",
-  IVE:  "iShares S&P 500 Value ETF — empresas grandes de EE.UU. con perfil 'value' (más baratas relativo a sus fundamentals)",
   IBIT: "iShares Bitcoin Trust — expone a Bitcoin a través de un ETF listado en bolsa",
   NOW:  "ServiceNow Inc — software empresarial de gestión de flujos de trabajo (workflow/ITSM)",
   ADBE: "Adobe Inc — software creativo y de marketing (Photoshop, Premiere, Creative Cloud)",
   NVDA: "Nvidia Corp — diseño de GPUs, líder en chips para IA",
   ANET: "Arista Networks Inc — switches y redes de alta velocidad para data centers",
   GOOGL:"Alphabet Inc (Google) — buscador, publicidad digital, Google Cloud y desarrollo de IA (Gemini)",
+  ALAB: "Astera Labs Inc — semiconductores de conectividad (retimers, switches PCIe/CXL) que unen GPUs y memoria dentro de los servidores de IA",
   AVGO: "Broadcom Inc — semiconductores (chips de red y ASICs custom para IA) y software empresarial (VMware)",
   XOM:  "ExxonMobil — una de las mayores petroleras integradas del mundo",
   GEV:  "GE Vernova — generación, transmisión y equipamiento de energía eléctrica (turbinas de gas, eólica, red)",
@@ -867,6 +867,7 @@ const TECH_CLASSIFICATION = {
   ANET: 'tech',
   GOOGL: 'tech',
   AVGO: 'tech',
+  ALAB: 'tech',
 };
 
 const SECTOR_CLASSIFICATION = {
@@ -883,13 +884,13 @@ const SECTOR_CLASSIFICATION = {
   ANET: 'Tecnología',
   GOOGL: 'Tecnología',
   AVGO: 'Tecnología',
+  ALAB: 'Tecnología',
   EFA: 'Internacional',
   EEM: 'Internacional',
   EWZ: 'Internacional',
   GEV: 'Energía',
   IBIT: 'Cripto',
   IVV: 'Diversificado',
-  IVE: 'Diversificado',
   VIG: 'Diversificado',
   SPHQ: 'Diversificado',
   CVS: 'Salud',
@@ -899,7 +900,7 @@ const SECTOR_CLASSIFICATION = {
 };
 
 const SECTOR_DESCRIPTIONS = {
-  'Tecnología': 'Software y hardware ligados al ciclo de IA/growth: gestión empresarial, creatividad, chips y redes de datacenter, más exposición directa a búsqueda/publicidad/cloud/IA vía GOOGL.',
+  'Tecnología': 'Software y hardware ligados al ciclo de IA/growth: gestión empresarial, creatividad, chips y redes de datacenter (incluye conectividad para servidores de IA vía ALAB), más exposición directa a búsqueda/publicidad/cloud/IA vía GOOGL.',
   'Internacional': 'Exposición fuera de EE.UU.: mercados desarrollados y emergentes. Es tu pata de diversificación geográfica.',
   'Utilities': 'Eléctricas y gas de EE.UU. Sector defensivo, cada vez más ligado a la demanda de energía de los data centers de IA.',
   'Financiero': 'Bancos, aseguradoras y financieras de EE.UU. Sensible a tasas de interés y ciclo económico. Incluye a Berkshire Hathaway (BRKB), un holding diversificado (seguros, ferrocarriles, energía, cartera de acciones) con beta históricamente más bajo que el sector financiero promedio.',
@@ -1175,4 +1176,5 @@ setInterval(() => fetchXOM(), 15*60*1000);
 </script>
 </body>
 </html>
+
 
