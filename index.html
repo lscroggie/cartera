@@ -271,7 +271,7 @@
         <div class="card-val" id="ao28-saldo" style="margin-top:8px">—</div>
         <div class="card-sub">saldo en ARS</div>
         <div class="card-val" id="ao28-resultado" style="margin-top:4px;font-size:13px">—</div>
-        <div class="card-sub">resultado vs. compra ($508.041,48)</div>
+        <div class="card-sub">resultado vs. compra ($649.961,33)</div>
         <div style="font-size:10px;color:#454952;margin-top:8px" id="ao28-status">no cargado</div>
       </div>
       <div class="card-patrimonio">
@@ -353,7 +353,7 @@ const COLORS = ["#6366f1","#8b5cf6","#22d3ee","#3b82f6","#10b981","#f59e0b","#ef
 let positions = [], summary = {}, sortKey = 'winLoss', sortDir = -1;
 let currentUrl = DEFAULT_URL, lastUpdate = null, colorMap = {};
 let cclValue = 0;
-const AO28_COSTO_COMPRA = 508041.48;
+const AO28_COSTO_COMPRA = 649961.33;
 
 function parseNum(s) {
   if (!s) return 0;
@@ -743,7 +743,7 @@ function recalcPatrimonio() {
   }
 
   const xomARS    = xomPx    > 0 ? 50 * xomPx * ccl : 0;
-  const ao28ARS   = ao28Px   > 0 ? (ao28Px / 100) * 350 : 0;
+  const ao28ARS   = ao28Px   > 0 ? (ao28Px / 100) * 450 : 0;
   const criptoARS = criptoTotalUSD > 0 ? criptoTotalUSD * ccl : 0;
   const balanzARS = balanzUSD > 0 ? balanzUSD * ccl : 0;
 
@@ -1176,5 +1176,3 @@ setInterval(() => fetchXOM(), 15*60*1000);
 </script>
 </body>
 </html>
-
-
