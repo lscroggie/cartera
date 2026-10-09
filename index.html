@@ -216,7 +216,7 @@
     <div class="geo-card nonus">
       <div class="card-label">🌍 Concentración Non-US</div>
       <div class="card-val neutral" id="geo-nonus-pct">—</div>
-      <div class="card-sub" id="geo-nonus-monto">EFA + EEM + EWZ</div>
+      <div class="card-sub" id="geo-nonus-monto">Non-US</div>
       <div class="geo-bar-track"><div class="geo-bar-fill" id="geo-nonus-bar" style="width:0%;background:linear-gradient(90deg,#f59e0b,#ec4899)"></div></div>
       <div class="geo-target">Target: 20%–25%</div>
     </div>
@@ -233,7 +233,7 @@
     <div class="geo-card tech">
       <div class="card-label">💻 Concentración Tech/Growth</div>
       <div class="card-val neutral" id="tech-pct">—</div>
-      <div class="card-sub" id="tech-monto">NOW + ADBE + NVDA + ANET + GOOGL + AVGO + ALAB</div>
+      <div class="card-sub" id="tech-monto">Tech/Growth</div>
       <div class="geo-bar-track"><div class="geo-bar-fill" id="tech-bar" style="width:0%;background:linear-gradient(90deg,#22d3ee,#6366f1)"></div></div>
       <div class="geo-target">Sin límite fijo — mirar en conjunto con el resto</div>
     </div>
@@ -829,7 +829,6 @@ const TICKER_INFO = {
   EFA:  "iShares MSCI EAFE ETF — acciones de mercados desarrollados fuera de EE.UU./Canadá (Europa, Japón, Australia)",
   EWZ:  "iShares MSCI Brazil ETF — acciones brasileñas de gran capitalización",
   VIG:  "Vanguard Dividend Appreciation ETF — empresas con historial de aumentar dividendos año tras año",
-  XLV:  "Health Care Select Sector SPDR — sector salud de EE.UU. (farmacéuticas, seguros médicos, equipamiento)",
   XLP:  "Consumer Staples Select Sector SPDR — consumo masivo/defensivo (alimentos, higiene, bebidas)",
   XLI:  "Industrial Select Sector SPDR — sector industrial (manufactura, transporte, defensa, maquinaria)",
   XLU:  "Utilities Select Sector SPDR — empresas de energía eléctrica/gas, muy ligado a la demanda de data centers de IA",
@@ -849,7 +848,8 @@ const TICKER_INFO = {
   AO28: "Bono soberano argentino en dólares, ley Argentina, vencimiento 2028",
   SPHQ: "Invesco S&P 500 Quality ETF — empresas del S&P 500 seleccionadas por calidad (ROE alto, deuda baja, ganancias estables)",
   CVS:  "CVS Health Corp — cadena de farmacias, PBM (Caremark) y aseguradora de salud (Aetna) de EE.UU.",
-  SPCX: "Space Exploration Technologies Corp (SpaceX) — lanzadores reutilizables (Falcon 9/Heavy, Starship) y la red satelital Starlink",
+  ITUB: "Itaú Unibanco Holding — mayor banco privado de Brasil y de Latinoamérica (banca minorista, crédito, seguros y gestión de activos)",
+  DELL: "Dell Technologies Inc — servidores, almacenamiento y PCs; uno de los principales proveedores de servidores optimizados para IA (PowerEdge) para empresas y data centers",
   MCD:  "McDonald's Corp — la cadena de comida rápida más grande del mundo, negocio principalmente de franquicias y bienes raíces",
   BRKB: "Berkshire Hathaway Inc (clase B) — holding de Warren Buffett: seguros (GEICO), ferrocarriles (BNSF), energía y una cartera de acciones cotizantes",
 };
@@ -858,6 +858,7 @@ const GEO_CLASSIFICATION = {
   EFA: 'non-us',
   EEM: 'non-us',
   EWZ: 'non-us',
+  ITUB: 'non-us',
 };
 
 const TECH_CLASSIFICATION = {
@@ -868,6 +869,7 @@ const TECH_CLASSIFICATION = {
   GOOGL: 'tech',
   AVGO: 'tech',
   ALAB: 'tech',
+  DELL: 'tech',
 };
 
 const SECTOR_CLASSIFICATION = {
@@ -877,7 +879,6 @@ const SECTOR_CLASSIFICATION = {
   XLY: 'Consumo discrecional',
   XLP: 'Consumo defensivo',
   XLI: 'Industrial',
-  XLV: 'Salud',
   NOW: 'Tecnología',
   ADBE: 'Tecnología',
   NVDA: 'Tecnología',
@@ -885,6 +886,7 @@ const SECTOR_CLASSIFICATION = {
   GOOGL: 'Tecnología',
   AVGO: 'Tecnología',
   ALAB: 'Tecnología',
+  DELL: 'Tecnología',
   EFA: 'Internacional',
   EEM: 'Internacional',
   EWZ: 'Internacional',
@@ -894,16 +896,16 @@ const SECTOR_CLASSIFICATION = {
   VIG: 'Diversificado',
   SPHQ: 'Diversificado',
   CVS: 'Salud',
-  SPCX: 'Aeroespacial',
   MCD: 'Consumo discrecional',
   BRKB: 'Financiero',
+  ITUB: 'Financiero',
 };
 
 const SECTOR_DESCRIPTIONS = {
-  'Tecnología': 'Software y hardware ligados al ciclo de IA/growth: gestión empresarial, creatividad, chips y redes de datacenter (incluye conectividad para servidores de IA vía ALAB), más exposición directa a búsqueda/publicidad/cloud/IA vía GOOGL.',
+  'Tecnología': 'Software y hardware ligados al ciclo de IA/growth: gestión empresarial, creatividad, chips y redes de datacenter (incluye conectividad para servidores de IA vía ALAB), servidores y hardware de infraestructura para IA (DELL), más exposición directa a búsqueda/publicidad/cloud/IA vía GOOGL.',
   'Internacional': 'Exposición fuera de EE.UU.: mercados desarrollados y emergentes. Es tu pata de diversificación geográfica.',
   'Utilities': 'Eléctricas y gas de EE.UU. Sector defensivo, cada vez más ligado a la demanda de energía de los data centers de IA.',
-  'Financiero': 'Bancos, aseguradoras y financieras de EE.UU. Sensible a tasas de interés y ciclo económico. Incluye a Berkshire Hathaway (BRKB), un holding diversificado (seguros, ferrocarriles, energía, cartera de acciones) con beta históricamente más bajo que el sector financiero promedio.',
+  'Financiero': 'Bancos, aseguradoras y financieras, mayormente de EE.UU. Sensible a tasas de interés y ciclo económico. Incluye a Berkshire Hathaway (BRKB), un holding diversificado (seguros, ferrocarriles, energía, cartera de acciones) con beta históricamente más bajo que el sector financiero promedio, e Itaú Unibanco (ITUB), el mayor banco privado de Brasil, que suma exposición a Latinoamérica y cuenta como Non-US.',
   'Energía': 'Generación y distribución de energía, y petroleras/gasíferas. Correlaciona con el precio de la energía, buen hedge inflacionario.',
   'Consumo discrecional': 'Restaurantes, retail y ocio: gasto no esencial, más cíclico y sensible a la economía.',
   'Consumo defensivo': 'Alimentos, higiene y bebidas: gasto esencial, suele sostenerse mejor en recesiones.',
@@ -911,7 +913,6 @@ const SECTOR_DESCRIPTIONS = {
   'Salud': 'Farmacéuticas, seguros médicos y equipamiento. Defensivo, con demanda relativamente estable.',
   'Cripto': 'Exposición a Bitcoin a través de un ETF listado en bolsa.',
   'Diversificado': 'ETFs de mercado amplio de EE.UU., sin sesgo a un sector puntual — funcionan como base de la cartera.',
-  'Aeroespacial': 'Lanzadores espaciales, satélites y conectividad. Empresa privada de alto crecimiento recién debutada en bolsa, alta volatilidad.',
   'Otros': 'Posiciones que todavía no tienen un sector asignado en el mapeo.',
 };
 
@@ -1007,7 +1008,8 @@ function calcGeoConcentracion(posArr) {
 function renderGeoCards() {
   const geo = calcGeoConcentracion(positions);
   document.getElementById('geo-nonus-pct').textContent = fPct(geo.pctNonUS, false);
-  document.getElementById('geo-nonus-monto').textContent = 'EFA + EEM + EWZ · ' + fARS(geo.montoNonUS);
+  const heldNonUS = positions.filter(p => GEO_CLASSIFICATION[p.symbol] === 'non-us').map(p => p.symbol);
+  document.getElementById('geo-nonus-monto').textContent = (heldNonUS.length ? heldNonUS.join(' + ') : 'Non-US') + ' · ' + fARS(geo.montoNonUS);
   document.getElementById('geo-nonus-bar').style.width = Math.min(100, geo.pctNonUS) + '%';
 
   document.getElementById('geo-us-pct').textContent = fPct(geo.pctUS, false);
