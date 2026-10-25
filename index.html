@@ -165,6 +165,45 @@
   .hero-patrimonio-usd { font-size: 12.5px; color: #93c5fd; font-weight: 600; }
   .hero-patrimonio-sub { font-size: 9.5px; color: #a5b4fc; width: 100%; text-align: center; margin-top: 2px; }
   @media (max-width: 700px) { .hero-patrimonio-val { font-size: 19px; } }
+
+  /* ===== Dos bloques: pesos / dólares ===== */
+  .split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .split-card { display: block; text-decoration: none; background: #25282f; border: 1px solid #3a3e46; border-radius: 12px; padding: 12px 16px; position: relative; overflow: hidden; transition: border-color 0.15s; }
+  .split-card:hover { border-color: #6366f1; }
+  .split-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .split-card.ars::before { background: linear-gradient(90deg, #3b82f6, #6366f1); }
+  .split-card.usd::before { background: linear-gradient(90deg, #10b981, #84cc16); }
+  .split-card .card-val { font-size: 18px; color: #f1f5f9; }
+  .block-banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; border-radius: 12px; padding: 12px 18px; margin: 22px 0 14px; border: 1px solid; }
+  .block-banner.ars { background: rgba(59,130,246,0.10); border-color: rgba(59,130,246,0.35); }
+  .block-banner.usd { background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.35); }
+  .block-banner h2 { font-size: 15px; font-weight: 800; color: #f1f5f9; }
+  .bb-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .bb-val { font-size: 17px; font-weight: 800; color: #f1f5f9; font-variant-numeric: tabular-nums; text-align: right; }
+  .patrimonio-grid.g3 { grid-template-columns: repeat(3, 1fr); }
+  .patrimonio-grid.g4 { grid-template-columns: repeat(4, 1fr); }
+  .usd-controls { background: #25282f; border: 1px solid #3a3e46; border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; }
+  .usd-controls label.toggle { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: #cbd5e1; cursor: pointer; }
+  .usd-controls label.toggle input { width: 16px; height: 16px; accent-color: #10b981; cursor: pointer; }
+  .usd-controls label.toggle b { color: #f1f5f9; }
+  .cap-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8; flex-wrap: wrap; }
+  .mini-input { width: 84px; background: #212329; border: 1px solid #3a3e46; border-radius: 5px; padding: 4px 7px; color: #bfdbfe; font-size: 12.5px; font-weight: 700; outline: none; text-align: right; font-variant-numeric: tabular-nums; }
+  .mini-input:focus { border-color: #3b82f6; }
+  .mini-input::-webkit-outer-spin-button, .mini-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .mini-input[type=number] { -moz-appearance: textfield; }
+  .table-static thead th { cursor: default; }
+  .table-static thead th:hover { color: #94a3b8; }
+  .etf-chg { font-size: 10px; margin-top: 2px; font-variant-numeric: tabular-nums; color: #64748b; }
+  .etf-chg.pos { color: #34d399; }
+  .etf-chg.neg { color: #f87171; }
+  tfoot td { border-top: 1px solid #3a3e46; padding: 9px 12px; font-size: 12.5px; color: #94a3b8; }
+  tfoot tr.total td { color: #f1f5f9; font-weight: 800; background: #1b1d22; }
+  .card-patrimonio.dim { opacity: 0.55; }
+  .card-patrimonio.dim::before { background: #475569; }
+  .card-patrimonio .tag { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px; margin-left: 6px; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle; }
+  .card-patrimonio .tag.off { background: rgba(148,163,184,0.15); color: #94a3b8; }
+  @media (max-width: 1100px) { .patrimonio-grid.g4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px) { .split-row { grid-template-columns: 1fr; } .patrimonio-grid.g3, .patrimonio-grid.g4 { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -183,12 +222,36 @@
     <span class="hero-patrimonio-label">🏦 Patrimonio total</span>
     <span class="hero-patrimonio-val" id="pat-total">—</span>
     <span class="hero-patrimonio-usd" id="pat-usd">— USD</span>
-    <span class="hero-patrimonio-sub">CEDEARs + XOM + AO28 + Cripto + Fondos</span>
+    <span class="hero-patrimonio-sub" id="pat-sub">Pesos: CEDEARs + AO28 · Dólares: ETFs + Fondos + Cripto</span>
+  </div>
+
+  <div class="split-row">
+    <a class="split-card ars" href="#bloque-ars">
+      <div class="card-label">🇦🇷 Existencias en pesos</div>
+      <div class="card-val" id="split-ars-val">—</div>
+      <div class="card-sub" id="split-ars-sub">CEDEARs + AO28</div>
+    </a>
+    <a class="split-card usd" href="#bloque-usd">
+      <div class="card-label">💵 Activos en dólares</div>
+      <div class="card-val" id="split-usd-val">—</div>
+      <div class="card-sub" id="split-usd-sub">—</div>
+    </a>
   </div>
 
   <div class="asset-summary" id="asset-summary"></div>
 
   <div class="error-box" id="error-box" style="display:none"></div>
+
+  <div class="block-banner ars" id="bloque-ars">
+    <div>
+      <h2>🇦🇷 Existencias en pesos</h2>
+      <div class="bb-sub">CEDEARs y AO28 · valuados en ARS</div>
+    </div>
+    <div>
+      <div class="bb-val" id="ars-block-total">—</div>
+      <div class="bb-sub" id="ars-block-usd" style="text-align:right">—</div>
+    </div>
+  </div>
 
   <div class="section-label">📊 CEDEARs</div>
   <div class="cards">
@@ -254,16 +317,8 @@
   <hr class="divider"/>
 
   <div class="patrimonio-section">
-    <div class="section-label">💼 Detalle de posiciones</div>
-    <div class="patrimonio-grid">
-      <div class="card-patrimonio">
-        <div class="card-label">XOM · Exxonmobil</div>
-        <div style="margin-top:4px"><input class="pat-input" id="xom-precio" type="number" placeholder="precio actual USD" oninput="recalcPatrimonio()"/></div>
-        <div class="pat-hint">50 acciones · PPC USD 103</div>
-        <div class="card-val" id="xom-saldo" style="margin-top:8px">—</div>
-        <div class="card-sub">saldo en ARS</div>
-        <div style="font-size:10px;color:#454952;margin-top:8px" id="xom-status">no cargado</div>
-      </div>
+    <div class="section-label">🏛️ Otros en pesos</div>
+    <div class="patrimonio-grid g3">
       <div class="card-patrimonio">
         <div class="card-label">AO28 · Bono soberano ARG 2028</div>
         <div style="margin-top:4px"><input class="pat-input" id="ao28-precio" type="number" placeholder="precio c/100 nominales ARS" oninput="recalcPatrimonio()"/></div>
@@ -273,37 +328,6 @@
         <div class="card-val" id="ao28-resultado" style="margin-top:4px;font-size:13px">—</div>
         <div class="card-sub">resultado vs. compra ($649.961,33)</div>
         <div style="font-size:10px;color:#454952;margin-top:8px" id="ao28-status">no cargado</div>
-      </div>
-      <div class="card-patrimonio">
-        <div class="card-label">₿ Cripto · CoinGecko</div>
-        <div class="card-val" id="cripto-usd-val" style="margin-top:8px; font-size:15px; color:#f59e0b">—</div>
-        <div class="card-sub" style="margin-bottom:6px">total en USD</div>
-        <div class="card-val" id="cripto-saldo">—</div>
-        <div class="card-sub">saldo en ARS</div>
-        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;">
-          <button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="fetchCripto()">↻ actualizar</button>
-          <button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" id="cripto-toggle-btn" onclick="toggleCriptoBreakdown()">▾ desglose</button>
-        </div>
-        <div style="font-size:10px;color:#454952;margin-top:5px" id="cripto-status">no cargado</div>
-        <div id="cripto-breakdown" style="display:none; margin-top:8px; border-top:1px solid #2a2d34; padding-top:8px;"></div>
-      </div>
-      <div class="card-patrimonio">
-        <div class="card-label">💵 Fondos (saldo USD)</div>
-        <div class="balanz-row"><label>Balanz · Dólar Corto Plazo</label><input type="number" id="fb-0" value="4528" oninput="recalcPatrimonio()" placeholder="0"/></div>
-        <div class="balanz-row"><label>Allaria · Retorno Total</label><input type="number" id="fb-1" value="817.31" oninput="recalcPatrimonio()" placeholder="0"/></div>
-        <div class="pat-hint">Allaria: 249 cuotapartes × USD 1,31537</div>
-        <div class="card-val" id="balanz-usd-val" style="margin-top:8px; font-size:15px; color:#a78bfa">—</div>
-        <div class="card-sub" style="margin-bottom:2px">total en USD</div>
-        <div class="card-val" id="balanz-saldo">—</div>
-        <div class="card-sub">saldo en ARS</div>
-      </div>
-      <div class="card-patrimonio total">
-        <div class="card-label">CCL usado en Patrimonio</div>
-        <div class="ccl-inline" style="margin-top:8px;border-top:none;padding-top:0">
-          <label for="ccl-input">CCL</label>
-          <input class="pat-input" id="ccl-input" type="number" placeholder="CCL" oninput="recalcPatrimonio()"/>
-          <span id="ccl-display">—</span>
-        </div>
       </div>
     </div>
   </div>
@@ -343,6 +367,85 @@
   <div class="rankings">
     <div class="rank-box"><h4 class="green">🏆 Top performers</h4><div id="rank-top"></div></div>
     <div class="rank-box"><h4 class="red">💀 Underperformers</h4><div id="rank-bot"></div></div>
+  </div>
+
+  <div class="block-banner usd" id="bloque-usd">
+    <div>
+      <h2>💵 Activos en dólares</h2>
+      <div class="bb-sub" id="usd-block-sub">ETFs en Interactive Brokers · fondos USD · cripto · precios en USD</div>
+    </div>
+    <div>
+      <div class="bb-val" id="usd-block-total">—</div>
+      <div class="bb-sub" id="usd-block-ars" style="text-align:right">—</div>
+    </div>
+  </div>
+
+  <div class="usd-controls">
+    <div class="cap-row">
+      <label for="capital-usd">Capital USD a invertir</label>
+      <input class="mini-input" id="capital-usd" type="number" step="50" value="8000" oninput="onUsdSettingsChange()"/>
+      <span class="pat-hint">Los montos de cada ETF se calculan sobre este capital</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-head">
+      <span>🎯 ETFs en Interactive Brokers</span>
+      <small id="etf-status">no cargado</small>
+    </div>
+    <div class="table-scroll">
+      <table class="table-static">
+        <thead><tr>
+          <th class="left">Ticker</th>
+          <th class="left" style="min-width:200px">Activo</th>
+          <th>Asig.</th>
+          <th>Monto USD</th>
+          <th>Precio USD</th>
+          <th>Cant. est.</th>
+          <th>Cant. real</th>
+          <th>Valor USD</th>
+        </tr></thead>
+        <tbody id="etf-tbody"></tbody>
+        <tfoot id="etf-tfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="patrimonio-section">
+    <div class="section-label">💼 Otras posiciones en dólares</div>
+    <div class="patrimonio-grid g3">
+      <div class="card-patrimonio">
+        <div class="card-label">💵 Fondos (saldo USD)</div>
+        <div class="balanz-row"><label>Balanz · Dólar Corto Plazo</label><input type="number" id="fb-0" value="4528" oninput="recalcPatrimonio()" placeholder="0"/></div>
+        <div class="balanz-row"><label>Allaria · Retorno Total</label><input type="number" id="fb-1" value="817.31" oninput="recalcPatrimonio()" placeholder="0"/></div>
+        <div class="pat-hint">Allaria: 249 cuotapartes × USD 1,31537</div>
+        <div class="card-val" id="balanz-usd-val" style="margin-top:8px; font-size:15px; color:#a78bfa">—</div>
+        <div class="card-sub" style="margin-bottom:2px">total en USD</div>
+        <div class="card-val" id="balanz-saldo">—</div>
+        <div class="card-sub">saldo en ARS</div>
+      </div>
+      <div class="card-patrimonio">
+        <div class="card-label">₿ Cripto · CoinGecko</div>
+        <div class="card-val" id="cripto-usd-val" style="margin-top:8px; font-size:15px; color:#f59e0b">—</div>
+        <div class="card-sub" style="margin-bottom:6px">total en USD</div>
+        <div class="card-val" id="cripto-saldo">—</div>
+        <div class="card-sub">saldo en ARS</div>
+        <div style="margin-top:8px; display:flex; gap:6px; align-items:center;">
+          <button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="fetchCripto()">↻ actualizar</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" id="cripto-toggle-btn" onclick="toggleCriptoBreakdown()">▾ desglose</button>
+        </div>
+        <div style="font-size:10px;color:#454952;margin-top:5px" id="cripto-status">no cargado</div>
+        <div id="cripto-breakdown" style="display:none; margin-top:8px; border-top:1px solid #2a2d34; padding-top:8px;"></div>
+      </div>
+      <div class="card-patrimonio total">
+        <div class="card-label">CCL para convertir USD ⇄ ARS</div>
+        <div class="ccl-inline" style="margin-top:8px;border-top:none;padding-top:0">
+          <label for="ccl-input">CCL</label>
+          <input class="pat-input" id="ccl-input" type="number" placeholder="CCL" oninput="recalcPatrimonio()"/>
+          <span id="ccl-display">—</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -573,21 +676,12 @@ async function fetchLive() {
       document.getElementById('ccl-display').textContent = fARS(cclValue).replace('$\u202F','$ ');
     }
 
-    if (xomPrice > 0) {
-      document.getElementById('xom-precio').value = xomPrice;
-    }
-
     const ao28StatusEl = document.getElementById('ao28-status');
     if (ao28 > 0) {
       document.getElementById('ao28-precio').value = ao28;
       if (ao28StatusEl) ao28StatusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · data912 · $ ' + Math.round(ao28).toLocaleString('es-AR');
     } else if (ao28StatusEl) {
       ao28StatusEl.textContent = '🔴 sin dato del sheet · podés cargarlo manual';
-    }
-
-    if (xomPrice > 0) {
-      const xomStatusEl = document.getElementById('xom-status');
-      if (xomStatusEl) xomStatusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · data912 (sheet) · USD ' + xomPrice.toFixed(2);
     }
 
     lastUpdate = new Date();
@@ -644,25 +738,6 @@ const CRIPTO_HOLDINGS = [
 let criptoTotalUSD = 0;
 let criptoBreakdown = [];
 let criptoBreakdownVisible = false;
-
-async function fetchXOM() {
-  const statusEl = document.getElementById('xom-status');
-  statusEl.textContent = '⟳ consultando Yahoo Finance…';
-  try {
-    const yfUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/XOM?interval=1d&range=1d';
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(yfUrl);
-    const res = await fetchWithTimeout(proxyUrl, 10000);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-    if (!price) throw new Error('Sin precio en la respuesta');
-    document.getElementById('xom-precio').value = price;
-    statusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · USD ' + price.toFixed(2);
-    recalcPatrimonio();
-  } catch(e) {
-    statusEl.textContent = '🔴 error: ' + e.message + ' (usando último valor)';
-  }
-}
 
 async function fetchCripto() {
   document.getElementById('cripto-status').textContent = '⟳ consultando CoinGecko…';
@@ -732,9 +807,131 @@ function getBalanzTotalUSD() {
   return total;
 }
 
+// ===== Bloque USD: ETFs de Interactive Brokers =====
+const IBKR_ETFS = [
+  { sym: 'VTI',  name: 'Vanguard Total Stock Market',          pct: 30 },
+  { sym: 'SHV',  name: 'iShares Short Treasury Bond (T-Bills)', pct: 25 },
+  { sym: 'VXUS', name: 'Vanguard Total International Stock',   pct: 20 },
+  { sym: 'SCHD', name: 'Schwab US Dividend Equity',            pct: 15 },
+  { sym: 'XLV',  name: 'Health Care Select Sector SPDR',       pct: 10 },
+];
+const USD_SETTINGS_KEY = 'portfolio_usd_settings_v1';
+
+function getCapitalUSD() { return parseFloat(document.getElementById('capital-usd').value) || 0; }
+
+function buildEtfTable() {
+  document.getElementById('etf-tbody').innerHTML = IBKR_ETFS.map((e, i) => `<tr class="${i%2===0?'even':'odd'}">
+    <td class="left"><span class="sym" style="background:${COLORS[(i+2)%COLORS.length]}">${e.sym}</span></td>
+    <td class="left" style="font-size:12px;color:#94a3b8;white-space:nowrap">${e.name}</td>
+    <td class="dimmed">${e.pct}%</td>
+    <td class="bright" id="etf-monto-${e.sym}">—</td>
+    <td><input class="mini-input" type="number" step="0.01" id="etf-px-${e.sym}" placeholder="USD" oninput="onUsdSettingsChange()"/><div class="etf-chg" id="etf-chg-${e.sym}"></div></td>
+    <td class="dimmed" id="etf-est-${e.sym}">—</td>
+    <td><input class="mini-input" style="width:60px" type="number" step="1" min="0" id="real-${e.sym}" placeholder="—" oninput="onUsdSettingsChange()"/></td>
+    <td class="bright" id="etf-val-${e.sym}">—</td>
+  </tr>`).join('');
+}
+
+function loadUsdSettings() {
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem(USD_SETTINGS_KEY) || '{}') || {}; } catch (e) { s = {}; }
+  if (s.capital > 0) document.getElementById('capital-usd').value = s.capital;
+  if (s.real) IBKR_ETFS.forEach(e => { if (s.real[e.sym] > 0) document.getElementById('real-' + e.sym).value = s.real[e.sym]; });
+}
+
+function saveUsdSettings() {
+  try {
+    const real = {};
+    IBKR_ETFS.forEach(e => { const v = parseFloat(document.getElementById('real-' + e.sym).value); if (v > 0) real[e.sym] = v; });
+    localStorage.setItem(USD_SETTINGS_KEY, JSON.stringify({ capital: getCapitalUSD(), real }));
+  } catch (e) { /* sin storage: no pasa nada */ }
+}
+
+function onUsdSettingsChange() { saveUsdSettings(); recalcPatrimonio(); renderAssetSummary(); }
+
+// Cantidad estimada = acciones enteras que alcanza a comprar el monto objetivo; el resto queda como cash.
+// Si cargás "Cant. real", esa cantidad pisa a la estimada. Sin precio, la fila vale su monto objetivo.
+function calcEtf() {
+  const capital = getCapitalUSD();
+  const rows = IBKR_ETFS.map(e => {
+    const monto = capital * e.pct / 100;
+    const px = parseFloat(document.getElementById('etf-px-' + e.sym).value) || 0;
+    const real = parseFloat(document.getElementById('real-' + e.sym).value) || 0;
+    const est = px > 0 ? Math.floor(monto / px) : 0;
+    const qty = real > 0 ? real : est;
+    const valor = px > 0 ? qty * px : monto;
+    const resto = px > 0 ? Math.max(0, monto - qty * px) : 0;
+    return { ...e, monto, px, est, real, qty, valor, resto };
+  });
+  const posUSD = rows.reduce((s, r) => s + r.valor, 0);
+  const sobrante = rows.reduce((s, r) => s + r.resto, 0);
+  return { rows, capital, posUSD, sobrante, totalUSD: posUSD + sobrante };
+}
+
+function renderEtf(etf) {
+  etf.rows.forEach(r => {
+    document.getElementById('etf-monto-' + r.sym).textContent = fUSD(r.monto);
+    document.getElementById('etf-est-' + r.sym).textContent = r.px > 0 ? r.est : '—';
+    document.getElementById('etf-val-' + r.sym).textContent = fUSD(r.valor);
+  });
+  document.getElementById('etf-tfoot').innerHTML = `
+    <tr><td class="left" colspan="7">Sobrante en cash (por acciones enteras)</td><td style="text-align:right">${fUSD(etf.sobrante)}</td></tr>
+    <tr class="total"><td class="left" colspan="7">Total ETFs + cash</td><td style="text-align:right">${fUSD(etf.totalUSD)}</td></tr>`;
+}
+
+// Precios en vivo de los ETFs (Yahoo Finance vía proxy CORS). Cada precio queda editable a mano.
+async function fetchYahooMeta(sym) {
+  const paths = [
+    'https://query1.finance.yahoo.com/v8/finance/chart/' + sym + '?interval=1d&range=5d',
+    'https://query2.finance.yahoo.com/v8/finance/chart/' + sym + '?interval=1d&range=5d',
+  ];
+  const proxies = [
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+  ];
+  let lastErr = null;
+  for (const p of paths) {
+    for (const px of proxies) {
+      try {
+        const res = await fetchWithTimeout(px(p), 10000);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const meta = data && data.chart && data.chart.result && data.chart.result[0] && data.chart.result[0].meta;
+        if (meta && meta.regularMarketPrice > 0) return meta;
+        throw new Error('sin precio');
+      } catch (e) { lastErr = e; }
+    }
+  }
+  throw lastErr || new Error('sin respuesta');
+}
+
+async function fetchETFs() {
+  const statusEl = document.getElementById('etf-status');
+  statusEl.textContent = '⟳ consultando Yahoo Finance…';
+  const results = await Promise.allSettled(IBKR_ETFS.map(e => fetchYahooMeta(e.sym)));
+  let ok = 0;
+  results.forEach((r, i) => {
+    const sym = IBKR_ETFS[i].sym;
+    if (r.status !== 'fulfilled') return;
+    ok++;
+    const meta = r.value;
+    document.getElementById('etf-px-' + sym).value = meta.regularMarketPrice;
+    const prev = meta.chartPreviousClose || meta.previousClose;
+    const chgEl = document.getElementById('etf-chg-' + sym);
+    if (prev > 0) {
+      const chg = (meta.regularMarketPrice / prev - 1) * 100;
+      chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '% vs cierre ant.';
+      chgEl.className = 'etf-chg ' + (chg >= 0 ? 'pos' : 'neg');
+    }
+  });
+  if (ok === IBKR_ETFS.length) statusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · Yahoo Finance · precios en USD';
+  else if (ok > 0) statusEl.textContent = '🟡 ' + ok + ' de ' + IBKR_ETFS.length + ' precios · completá el resto a mano';
+  else statusEl.textContent = '🔴 sin precios en vivo · podés cargarlos a mano (sin precio, cada ETF vale su monto objetivo)';
+  recalcPatrimonio();
+}
+
 function recalcPatrimonio() {
   const ccl     = parseFloat(document.getElementById('ccl-input').value) || cclValue || 0;
-  const xomPx   = parseFloat(document.getElementById('xom-precio').value) || 0;
   const ao28Px  = parseFloat(document.getElementById('ao28-precio').value) || 0;
   const balanzUSD = getBalanzTotalUSD();
 
@@ -742,14 +939,9 @@ function recalcPatrimonio() {
     document.getElementById('ccl-display').textContent = '$ ' + Math.round(ccl).toLocaleString('es-AR');
   }
 
-  const xomARS    = xomPx    > 0 ? 50 * xomPx * ccl : 0;
-  const ao28ARS   = ao28Px   > 0 ? (ao28Px / 100) * 450 : 0;
-  const criptoARS = criptoTotalUSD > 0 ? criptoTotalUSD * ccl : 0;
-  const balanzARS = balanzUSD > 0 ? balanzUSD * ccl : 0;
-
-  document.getElementById('xom-saldo').textContent    = xomARS    > 0 ? fARS(xomARS)    : '—';
-  document.getElementById('ao28-saldo').textContent   = ao28ARS   > 0 ? fARS(ao28ARS)   : '—';
-
+  // --- Bloque pesos: CEDEARs + AO28
+  const ao28ARS = ao28Px > 0 ? (ao28Px / 100) * 450 : 0;
+  document.getElementById('ao28-saldo').textContent = ao28ARS > 0 ? fARS(ao28ARS) : '—';
   const ao28El = document.getElementById('ao28-resultado');
   if (ao28ARS > 0) {
     const ao28Res = ao28ARS - AO28_COSTO_COMPRA;
@@ -760,16 +952,41 @@ function recalcPatrimonio() {
     ao28El.textContent = '—';
     ao28El.className = 'card-val';
   }
+  const cedarSaldo = summary.saldoPesos || 0;
+  const arsBlock = cedarSaldo + ao28ARS;
+
+  // --- Bloque USD: ETFs IBKR + fondos + cripto
+  const etf = calcEtf();
+  renderEtf(etf);
+
+  const criptoARS = criptoTotalUSD > 0 ? criptoTotalUSD * ccl : 0;
+  const balanzARS = balanzUSD > 0 ? balanzUSD * ccl : 0;
   document.getElementById('cripto-saldo').textContent = criptoARS > 0 ? fARS(criptoARS) : '—';
   document.getElementById('balanz-usd-val').textContent = balanzUSD > 0 ? fUSD(balanzUSD) : '—';
   document.getElementById('balanz-saldo').textContent   = balanzARS > 0 ? fARS(balanzARS) : '—';
 
-  const cedarSaldo = summary.saldoPesos || 0;
-  const total = cedarSaldo + xomARS + ao28ARS + criptoARS + balanzARS;
+  const usdBlock = etf.totalUSD + criptoTotalUSD + balanzUSD;
+  const usdBlockARS = ccl > 0 ? usdBlock * ccl : 0;
+
+  // --- Totales
+  const total = arsBlock + usdBlockARS;
   const totalUSD = ccl > 0 ? total / ccl : 0;
+  const pctOf = v => total > 0 ? (v / total * 100).toFixed(1) + '% del patrimonio' : '';
 
   document.getElementById('pat-total').textContent = total > 0 ? fARS(total) : '—';
   document.getElementById('pat-usd').textContent   = totalUSD > 0 ? '≈ ' + fUSD(totalUSD) : '—';
+  document.getElementById('pat-sub').textContent = 'Pesos: CEDEARs + AO28 · Dólares: ETFs IBKR + Fondos + Cripto';
+
+  document.getElementById('ars-block-total').textContent = arsBlock > 0 ? fARS(arsBlock) : '—';
+  document.getElementById('ars-block-usd').textContent   = (arsBlock > 0 && ccl > 0) ? '≈ ' + fUSD(arsBlock / ccl) : '—';
+  document.getElementById('usd-block-total').textContent = usdBlock > 0 ? fUSD(usdBlock) : '—';
+  document.getElementById('usd-block-ars').textContent   = usdBlockARS > 0 ? '≈ ' + fARS(usdBlockARS) : '—';
+  document.getElementById('usd-block-sub').textContent = 'ETFs en Interactive Brokers · fondos USD · cripto';
+
+  document.getElementById('split-ars-val').textContent = arsBlock > 0 ? fARS(arsBlock) : '—';
+  document.getElementById('split-ars-sub').textContent = arsBlock > 0 ? pctOf(arsBlock) + ' · CEDEARs + AO28' : 'CEDEARs + AO28';
+  document.getElementById('split-usd-val').textContent = usdBlock > 0 ? fUSD(usdBlock) : '—';
+  document.getElementById('split-usd-sub').textContent = usdBlockARS > 0 ? pctOf(usdBlockARS) + ' · ≈ ' + fARS(usdBlockARS) : '—';
 }
 
 function setStatus(s) {
@@ -1139,19 +1356,20 @@ const CRIPTO_DISPLAY_NAMES = {
 function renderAssetSummary() {
   const cedearCount = positions.length;
   const bonoSoberano = 1;      // AO28
-  const accionNYSE = 1;        // XOM
+  const etfCount = IBKR_ETFS.length;
   const fciCount = 2;          // Fondos Balanz (Dólar Corto Plazo) + Allaria (Retorno Total)
   const criptoCount = CRIPTO_HOLDINGS.length;
-  const total = cedearCount + bonoSoberano + accionNYSE + fciCount + criptoCount;
+  const total = cedearCount + bonoSoberano + etfCount + fciCount + criptoCount;
 
   const cedearNames = positions.length ? positions.map(p => p.symbol).join(', ') : 'cargando…';
   const criptoNames = CRIPTO_HOLDINGS.map(h => CRIPTO_DISPLAY_NAMES[h.id] || h.id).join(', ');
   const fciNames = 'Balanz: Dólar Corto Plazo · Allaria: Retorno Total';
+  const etfNames = IBKR_ETFS.map(e => e.sym).join(', ');
 
   const chips = [
     { label: 'CEDEARs/ETFs', val: cedearCount, detail: cedearNames },
-    { label: 'bono soberano', val: bonoSoberano, detail: 'AO28 (dólares)' },
-    { label: 'acción NYSE', val: accionNYSE, detail: 'XOM (ExxonMobil)' },
+    { label: 'bono soberano', val: bonoSoberano, detail: 'AO28 (en pesos)' },
+    { label: 'ETFs en USD', val: etfCount, detail: 'Interactive Brokers: ' + etfNames },
     { label: 'FCI', val: fciCount, detail: fciNames },
     { label: 'criptomonedas', val: criptoCount, detail: criptoNames },
   ];
@@ -1169,12 +1387,14 @@ async function cargarTodo() {
   await fetchLive();
 }
 
+buildEtfTable();
+loadUsdSettings();
 cargarTodo();
 fetchCripto();
-fetchXOM();
+fetchETFs();
 window._ar = setInterval(() => { cargarTodo(); }, 5*60*1000);
 setInterval(() => fetchCripto(), 15*60*1000);
-setInterval(() => fetchXOM(), 15*60*1000);
+setInterval(() => fetchETFs(), 15*60*1000);
 </script>
 </body>
 </html>
