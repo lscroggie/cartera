@@ -391,7 +391,7 @@
   <div class="table-wrap">
     <div class="table-head">
       <span>🎯 ETFs en Interactive Brokers</span>
-      <small id="etf-status">no cargado</small>
+      <small id="etf-status">precios de respaldo (cierre 23/10/2026)</small>
     </div>
     <div class="table-scroll">
       <table class="table-static">
@@ -808,12 +808,13 @@ function getBalanzTotalUSD() {
 }
 
 // ===== Bloque USD: ETFs de Interactive Brokers =====
+// px0 = precio de respaldo (cierre del 23/10/2026). Si Yahoo responde, el precio en vivo lo reemplaza.
 const IBKR_ETFS = [
-  { sym: 'VTI',  name: 'Vanguard Total Stock Market',          pct: 30 },
-  { sym: 'SHV',  name: 'iShares Short Treasury Bond (T-Bills)', pct: 25 },
-  { sym: 'VXUS', name: 'Vanguard Total International Stock',   pct: 20 },
-  { sym: 'SCHD', name: 'Schwab US Dividend Equity',            pct: 15 },
-  { sym: 'XLV',  name: 'Health Care Select Sector SPDR',       pct: 10 },
+  { sym: 'VTI',  name: 'Vanguard Total Stock Market',          pct: 30, px0: 373.88 },
+  { sym: 'SHV',  name: 'iShares Short Treasury Bond (T-Bills)', pct: 25, px0: 110.33 },
+  { sym: 'VXUS', name: 'Vanguard Total International Stock',   pct: 20, px0: 82.53 },
+  { sym: 'SCHD', name: 'Schwab US Dividend Equity',            pct: 15, px0: 35.24 },
+  { sym: 'XLV',  name: 'Health Care Select Sector SPDR',       pct: 10, px0: 179.69 },
 ];
 const USD_SETTINGS_KEY = 'portfolio_usd_settings_v1';
 
@@ -825,7 +826,7 @@ function buildEtfTable() {
     <td class="left" style="font-size:12px;color:#94a3b8;white-space:nowrap">${e.name}</td>
     <td class="dimmed">${e.pct}%</td>
     <td class="bright" id="etf-monto-${e.sym}">—</td>
-    <td><input class="mini-input" type="number" step="0.01" id="etf-px-${e.sym}" placeholder="USD" oninput="onUsdSettingsChange()"/><div class="etf-chg" id="etf-chg-${e.sym}"></div></td>
+    <td><input class="mini-input" type="number" step="0.01" id="etf-px-${e.sym}" value="${e.px0}" placeholder="USD" oninput="onUsdSettingsChange()"/><div class="etf-chg" id="etf-chg-${e.sym}"></div></td>
     <td class="dimmed" id="etf-est-${e.sym}">—</td>
     <td><input class="mini-input" style="width:60px" type="number" step="1" min="0" id="real-${e.sym}" placeholder="—" oninput="onUsdSettingsChange()"/></td>
     <td class="bright" id="etf-val-${e.sym}">—</td>
@@ -905,28 +906,51 @@ async function fetchYahooMeta(sym) {
   throw lastErr || new Error('sin respuesta');
 }
 
+// Prioridad de precios: 1) pestaña "etfs usd" del Sheet (GOOGLEFINANCE) 2) Yahoo Finance vía proxy 3) precio de respaldo.
+const ETF_SHEET_NAME = 'etfs usd';
+
+async function fetchEtfPricesFromSheet() {
+  const raw = await fetchCSV(ETF_SHEET_NAME);
+  const rows = parseCSV(raw);
+  const out = {};
+  rows.forEach(r => {
+    const sym = (r[0] || '').trim().toUpperCase();
+    const px = parseNum(r[1]);
+    if (IBKR_ETFS.some(e => e.sym === sym) && px > 0) out[sym] = px;
+  });
+  return out;
+}
+
 async function fetchETFs() {
   const statusEl = document.getElementById('etf-status');
-  statusEl.textContent = '⟳ consultando Yahoo Finance…';
-  const results = await Promise.allSettled(IBKR_ETFS.map(e => fetchYahooMeta(e.sym)));
-  let ok = 0;
-  results.forEach((r, i) => {
-    const sym = IBKR_ETFS[i].sym;
-    if (r.status !== 'fulfilled') return;
-    ok++;
-    const meta = r.value;
-    document.getElementById('etf-px-' + sym).value = meta.regularMarketPrice;
-    const prev = meta.chartPreviousClose || meta.previousClose;
-    const chgEl = document.getElementById('etf-chg-' + sym);
-    if (prev > 0) {
-      const chg = (meta.regularMarketPrice / prev - 1) * 100;
-      chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '% vs cierre ant.';
-      chgEl.className = 'etf-chg ' + (chg >= 0 ? 'pos' : 'neg');
-    }
-  });
-  if (ok === IBKR_ETFS.length) statusEl.textContent = '🟢 ' + new Date().toLocaleTimeString('es-AR') + ' · Yahoo Finance · precios en USD';
-  else if (ok > 0) statusEl.textContent = '🟡 ' + ok + ' de ' + IBKR_ETFS.length + ' precios · completá el resto a mano';
-  else statusEl.textContent = '🔴 sin precios en vivo · podés cargarlos a mano (sin precio, cada ETF vale su monto objetivo)';
+  statusEl.textContent = '⟳ consultando precios…';
+  let fromSheet = {};
+  try { fromSheet = await fetchEtfPricesFromSheet(); } catch (e) { fromSheet = {}; }
+  const nSheet = Object.keys(fromSheet).length;
+  IBKR_ETFS.forEach(e => { if (fromSheet[e.sym]) document.getElementById('etf-px-' + e.sym).value = fromSheet[e.sym]; });
+
+  const faltan = IBKR_ETFS.filter(e => !fromSheet[e.sym]);
+  let nYahoo = 0;
+  if (faltan.length) {
+    const results = await Promise.allSettled(faltan.map(e => fetchYahooMeta(e.sym)));
+    results.forEach((r, i) => {
+      if (r.status !== 'fulfilled') return;
+      nYahoo++;
+      const sym = faltan[i].sym, meta = r.value;
+      document.getElementById('etf-px-' + sym).value = meta.regularMarketPrice;
+      const prev = meta.chartPreviousClose || meta.previousClose;
+      const chgEl = document.getElementById('etf-chg-' + sym);
+      if (prev > 0) {
+        const chg = (meta.regularMarketPrice / prev - 1) * 100;
+        chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '% vs cierre ant.';
+        chgEl.className = 'etf-chg ' + (chg >= 0 ? 'pos' : 'neg');
+      }
+    });
+  }
+  const total = IBKR_ETFS.length, ok = nSheet + nYahoo, hora = new Date().toLocaleTimeString('es-AR');
+  if (ok === total) statusEl.textContent = '🟢 ' + hora + ' · ' + (nSheet === total ? 'Google Sheets' : nSheet > 0 ? 'Sheets + Yahoo' : 'Yahoo Finance') + ' · precios en USD';
+  else if (ok > 0) statusEl.textContent = '🟡 ' + ok + ' de ' + total + ' precios actualizados · el resto con precio de respaldo (cierre 23/10)';
+  else statusEl.textContent = '🟡 sin precios en vivo · usando respaldo (cierre 23/10/2026) · creá la pestaña "' + ETF_SHEET_NAME + '" en el Sheet o editá a mano';
   recalcPatrimonio();
 }
 
