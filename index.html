@@ -416,9 +416,7 @@
     <div class="patrimonio-grid g3">
       <div class="card-patrimonio">
         <div class="card-label">💵 Fondos (saldo USD)</div>
-        <div class="balanz-row"><label>Balanz · Dólar Corto Plazo</label><input type="number" id="fb-0" value="4528" oninput="recalcPatrimonio()" placeholder="0"/></div>
-        <div class="balanz-row"><label>Allaria · Retorno Total</label><input type="number" id="fb-1" value="817.31" oninput="recalcPatrimonio()" placeholder="0"/></div>
-        <div class="pat-hint">Allaria: 249 cuotapartes × USD 1,31537</div>
+        <div class="balanz-row"><label>Balanz · Dólar Corto Plazo</label><input type="number" id="fb-0" value="5342" oninput="recalcPatrimonio()" placeholder="0"/></div>
         <div class="card-val" id="balanz-usd-val" style="margin-top:8px; font-size:15px; color:#a78bfa">—</div>
         <div class="card-sub" style="margin-bottom:2px">total en USD</div>
         <div class="card-val" id="balanz-saldo">—</div>
@@ -800,7 +798,7 @@ function renderCriptoBreakdown() {
 
 function getBalanzTotalUSD() {
   let total = 0;
-  ['fb-0', 'fb-1'].forEach(id => {
+  ['fb-0'].forEach(id => {
     const el = document.getElementById(id);
     total += parseFloat(el && el.value) || 0;
   });
@@ -1381,13 +1379,13 @@ function renderAssetSummary() {
   const cedearCount = positions.length;
   const bonoSoberano = 1;      // AO28
   const etfCount = IBKR_ETFS.length;
-  const fciCount = 2;          // Fondos Balanz (Dólar Corto Plazo) + Allaria (Retorno Total)
+  const fciCount = 1;          // Fondo Balanz (Dólar Corto Plazo)
   const criptoCount = CRIPTO_HOLDINGS.length;
   const total = cedearCount + bonoSoberano + etfCount + fciCount + criptoCount;
 
   const cedearNames = positions.length ? positions.map(p => p.symbol).join(', ') : 'cargando…';
   const criptoNames = CRIPTO_HOLDINGS.map(h => CRIPTO_DISPLAY_NAMES[h.id] || h.id).join(', ');
-  const fciNames = 'Balanz: Dólar Corto Plazo · Allaria: Retorno Total';
+  const fciNames = 'Balanz: Dólar Corto Plazo';
   const etfNames = IBKR_ETFS.map(e => e.sym).join(', ');
 
   const chips = [
