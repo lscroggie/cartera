@@ -121,14 +121,6 @@
   .sector-detail { font-size: 12.5px; color: #b0bac7; margin-top: 5px; line-height: 1.6; }
   .sector-detail b { color: #e2e8f0; }
   .sector-detail em { color: #8b96a5; font-style: normal; }
-  .rankings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .rank-box { background: #25282f; border: 1px solid #3a3e46; border-radius: 12px; padding: 16px; }
-  .rank-box h4 { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
-  .rank-box h4.green { color: #34d399; }
-  .rank-box h4.red { color: #f87171; }
-  .rank-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #33363d; }
-  .rank-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  .rank-amt { font-size: 11px; color: #94a3b8; }
   .dist-cell { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
   .dist-bar { height: 7px; border-radius: 3px; min-width: 3px; }
   .divider { border: none; border-top: 1px solid #3a3e46; margin: 14px 0 16px; }
@@ -146,7 +138,6 @@
   .geo-bar-fill { height: 100%; border-radius: 5px; }
   .geo-target { font-size: 8.5px; color: #64748b; margin-top: 4px; }
   @media (max-width: 1100px) { .patrimonio-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 700px) { .rankings { grid-template-columns: 1fr; } }
   .hero-patrimonio {
     background: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 100%);
     border: 1px solid #6366f1;
@@ -363,11 +354,6 @@
   </div>
 
   <hr class="divider"/>
-
-  <div class="rankings">
-    <div class="rank-box"><h4 class="green">🏆 Top performers</h4><div id="rank-top"></div></div>
-    <div class="rank-box"><h4 class="red">💀 Underperformers</h4><div id="rank-bot"></div></div>
-  </div>
 
   <div class="block-banner usd" id="bloque-usd">
     <div>
@@ -1349,21 +1335,6 @@ function renderGananciasPerdidas() {
     : 'sin posiciones en rojo';
 }
 
-function renderRankings() {
-  const items = arr => arr.map(p => {
-    const wl = p.winLoss >= 0 ? 'pos' : 'neg';
-    return `<div class="rank-row">
-      <div style="display:flex;align-items:center;gap:8px;min-width:0">
-        ${symBadge(p.symbol)}
-        <span style="font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px" title="${p.activo}">${p.activo}</span>
-      </div>
-      <div class="rank-right">${pctBadge(p.pct)}<span class="rank-amt ${wl}">${p.winLoss>=0?'+':''}${fARS(p.winLoss)}</span></div>
-    </div>`;
-  }).join('');
-  document.getElementById('rank-top').innerHTML = items([...positions].sort((a,b)=>b.pct-a.pct).slice(0,5));
-  document.getElementById('rank-bot').innerHTML = items([...positions].sort((a,b)=>a.pct-b.pct).slice(0,5));
-}
-
 const CRIPTO_DISPLAY_NAMES = {
   bitcoin: 'Bitcoin', tether: 'Tether', algorand: 'Algorand', secret: 'Secret',
   solana: 'Solana', iota: 'IOTA', 'avalanche-2': 'Avalanche', stellar: 'Stellar',
@@ -1403,7 +1374,7 @@ function renderAssetSummary() {
     `<div class="asset-chip total" title="${totalDetail.replace(/"/g,'&quot;')}"><b>${total}</b> activos en total</div>`;
 }
 
-function render() { renderCards(); renderTable(); renderRankings(); renderGananciasPerdidas(); renderGeoCards(); renderTechCards(); renderSectorDist(); renderAssetSummary(); updateSortIndicators(); }
+function render() { renderCards(); renderTable(); renderGananciasPerdidas(); renderGeoCards(); renderTechCards(); renderSectorDist(); renderAssetSummary(); updateSortIndicators(); }
 
 async function cargarTodo() {
   await fetchLive();
