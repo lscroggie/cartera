@@ -369,7 +369,7 @@
   <div class="usd-controls">
     <div class="cap-row">
       <label for="capital-usd">Capital USD a invertir</label>
-      <input class="mini-input" id="capital-usd" type="number" step="50" value="8000" oninput="onUsdSettingsChange()"/>
+      <input class="mini-input" id="capital-usd" type="number" step="50" value="8330" oninput="onUsdSettingsChange()"/>
       <span class="pat-hint">Los montos de cada ETF se calculan sobre este capital</span>
     </div>
   </div>
@@ -794,13 +794,14 @@ function getBalanzTotalUSD() {
 // ===== Bloque USD: ETFs de Interactive Brokers =====
 // px0 = precio de respaldo (cierre del 23/10/2026). Si Yahoo responde, el precio en vivo lo reemplaza.
 const IBKR_ETFS = [
-  { sym: 'VTI',  name: 'Vanguard Total Stock Market',          pct: 30, px0: 373.88 },
-  { sym: 'SHV',  name: 'iShares Short Treasury Bond (T-Bills)', pct: 25, px0: 110.33 },
-  { sym: 'VXUS', name: 'Vanguard Total International Stock',   pct: 20, px0: 82.53 },
-  { sym: 'SCHD', name: 'Schwab US Dividend Equity',            pct: 15, px0: 35.24 },
-  { sym: 'XLV',  name: 'Health Care Select Sector SPDR',       pct: 10, px0: 179.69 },
+  { sym: 'VTI',  name: 'Vanguard Total Stock Market',           pct: 20,   px0: 373.88 },
+  { sym: 'VXUS', name: 'Vanguard Total International Stock',    pct: 20,   px0: 82.53 },
+  { sym: 'SCHD', name: 'Schwab US Dividend Equity',             pct: 20,   px0: 35.24 },
+  { sym: 'SHV',  name: 'iShares Short Treasury Bond (T-Bills)', pct: 15,   px0: 110.33 },
+  { sym: 'XLV',  name: 'Health Care Select Sector SPDR',        pct: 12.5, px0: 179.69 },
+  { sym: 'SPMO', name: 'Invesco S&P 500 Momentum',              pct: 12.5, px0: 0 },
 ];
-const USD_SETTINGS_KEY = 'portfolio_usd_settings_v1';
+const USD_SETTINGS_KEY = 'portfolio_usd_settings_v2';
 
 function getCapitalUSD() { return parseFloat(document.getElementById('capital-usd').value) || 0; }
 
@@ -810,7 +811,7 @@ function buildEtfTable() {
     <td class="left" style="font-size:12px;color:#94a3b8;white-space:nowrap">${e.name}</td>
     <td class="dimmed">${e.pct}%</td>
     <td class="bright" id="etf-monto-${e.sym}">—</td>
-    <td><input class="mini-input" type="number" step="0.01" id="etf-px-${e.sym}" value="${e.px0}" placeholder="USD" oninput="onUsdSettingsChange()"/><div class="etf-chg" id="etf-chg-${e.sym}"></div></td>
+    <td><input class="mini-input" type="number" step="0.01" id="etf-px-${e.sym}" value="${e.px0 || ''}" placeholder="USD" oninput="onUsdSettingsChange()"/><div class="etf-chg" id="etf-chg-${e.sym}"></div></td>
     <td class="dimmed" id="etf-est-${e.sym}">—</td>
     <td><input class="mini-input" style="width:60px" type="number" step="1" min="0" id="real-${e.sym}" placeholder="—" oninput="onUsdSettingsChange()"/></td>
     <td class="bright" id="etf-val-${e.sym}">—</td>
