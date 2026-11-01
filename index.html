@@ -835,7 +835,7 @@ function saveUsdSettings() {
 
 function onUsdSettingsChange() { saveUsdSettings(); recalcPatrimonio(); renderAssetSummary(); }
 
-// Cantidad estimada = acciones enteras que alcanza a comprar el monto objetivo; el resto queda como cash.
+// Cantidad estimada = monto objetivo / precio. Sin sobrante de cash.
 // Si cargás "Cant. real", esa cantidad pisa a la estimada. Sin precio, la fila vale su monto objetivo.
 function calcEtf() {
   const capital = getCapitalUSD();
@@ -843,10 +843,10 @@ function calcEtf() {
     const monto = capital * e.pct / 100;
     const px = parseFloat(document.getElementById('etf-px-' + e.sym).value) || 0;
     const real = parseFloat(document.getElementById('real-' + e.sym).value) || 0;
-    const est = px > 0 ? Math.floor(monto / px) : 0;
+    const est = px > 0 ? Math.round(monto / px * 100) / 100 : 0; // cantidad (fraccionaria) que compra el monto objetivo
     const qty = real > 0 ? real : est;
     const valor = px > 0 ? qty * px : monto;
-    const resto = px > 0 ? Math.max(0, monto - qty * px) : 0;
+    const resto = 0;
     return { ...e, monto, px, est, real, qty, valor, resto };
   });
   const posUSD = rows.reduce((s, r) => s + r.valor, 0);
@@ -864,8 +864,7 @@ function renderEtf(etf) {
   const sumPct = etf.rows.reduce((t, r) => t + r.pct, 0);
   document.getElementById('etf-tfoot').innerHTML = `
     <tr class="total"><td class="left" colspan="2">Total a comprar</td><td style="text-align:right">${sumPct}%</td><td style="text-align:right">${fUSD(sumMonto)}</td><td colspan="4"></td></tr>
-    <tr><td class="left" colspan="7">Sobrante en cash (por acciones enteras)</td><td style="text-align:right">${fUSD(etf.sobrante)}</td></tr>
-    <tr class="total"><td class="left" colspan="7">Total ETFs + cash</td><td style="text-align:right">${fUSD(etf.totalUSD)}</td></tr>`;
+    <tr class="total"><td class="left" colspan="7">Valor total ETFs</td><td style="text-align:right">${fUSD(etf.totalUSD)}</td></tr>`;
 }
 
 // Precios en vivo de los ETFs (Yahoo Finance vía proxy CORS). Cada precio queda editable a mano.
