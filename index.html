@@ -821,7 +821,7 @@ function buildEtfTable() {
 function loadUsdSettings() {
   let s = {};
   try { s = JSON.parse(localStorage.getItem(USD_SETTINGS_KEY) || '{}') || {}; } catch (e) { s = {}; }
-  if (s.capital > 0) document.getElementById('capital-usd').value = s.capital;
+  // El capital NO se restaura de localStorage: manda el valor del HTML (8330) para que no pise con montos viejos.
   if (s.real) IBKR_ETFS.forEach(e => { if (s.real[e.sym] > 0) document.getElementById('real-' + e.sym).value = s.real[e.sym]; });
 }
 
@@ -856,11 +856,14 @@ function calcEtf() {
 
 function renderEtf(etf) {
   etf.rows.forEach(r => {
-    document.getElementById('etf-monto-' + r.sym).textContent = fUSD(r.px > 0 ? r.qty * r.px : r.monto); // monto redondeado a acciones enteras
+    document.getElementById('etf-monto-' + r.sym).textContent = fUSD(r.monto); // monto objetivo exacto: la columna suma el capital total
     document.getElementById('etf-est-' + r.sym).textContent = r.px > 0 ? r.est : '—';
     document.getElementById('etf-val-' + r.sym).textContent = fUSD(r.valor);
   });
+  const sumMonto = etf.rows.reduce((t, r) => t + r.monto, 0);
+  const sumPct = etf.rows.reduce((t, r) => t + r.pct, 0);
   document.getElementById('etf-tfoot').innerHTML = `
+    <tr class="total"><td class="left" colspan="2">Total a comprar</td><td style="text-align:right">${sumPct}%</td><td style="text-align:right">${fUSD(sumMonto)}</td><td colspan="4"></td></tr>
     <tr><td class="left" colspan="7">Sobrante en cash (por acciones enteras)</td><td style="text-align:right">${fUSD(etf.sobrante)}</td></tr>
     <tr class="total"><td class="left" colspan="7">Total ETFs + cash</td><td style="text-align:right">${fUSD(etf.totalUSD)}</td></tr>`;
 }
