@@ -385,7 +385,7 @@
           <th class="left">Ticker</th>
           <th class="left" style="min-width:200px">Activo</th>
           <th>Asig.</th>
-          <th>Monto USD</th>
+          <th>Monto a comprar</th>
           <th>Precio USD</th>
           <th>Cant. est.</th>
           <th>Cant. real</th>
@@ -799,7 +799,7 @@ const IBKR_ETFS = [
   { sym: 'SCHD', name: 'Schwab US Dividend Equity',             pct: 20,   px0: 35.24 },
   { sym: 'SHV',  name: 'iShares Short Treasury Bond (T-Bills)', pct: 15,   px0: 110.33 },
   { sym: 'XLV',  name: 'Health Care Select Sector SPDR',        pct: 12.5, px0: 179.69 },
-  { sym: 'SPMO', name: 'Invesco S&P 500 Momentum',              pct: 12.5, px0: 0 },
+  { sym: 'SPMO', name: 'Invesco S&P 500 Momentum',              pct: 12.5, px0: 143.80 }, // aprox. (último dato público: 08/05/2026); el Sheet lo pisa
 ];
 const USD_SETTINGS_KEY = 'portfolio_usd_settings_v2';
 
@@ -856,7 +856,7 @@ function calcEtf() {
 
 function renderEtf(etf) {
   etf.rows.forEach(r => {
-    document.getElementById('etf-monto-' + r.sym).textContent = fUSD(r.monto);
+    document.getElementById('etf-monto-' + r.sym).textContent = fUSD(r.px > 0 ? r.qty * r.px : r.monto); // monto redondeado a acciones enteras
     document.getElementById('etf-est-' + r.sym).textContent = r.px > 0 ? r.est : '—';
     document.getElementById('etf-val-' + r.sym).textContent = fUSD(r.valor);
   });
