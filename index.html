@@ -340,6 +340,7 @@
           <th data-key="mesesCartera" data-label="Meses" onclick="sortBy('mesesCartera')">Meses</th>
           <th data-key="cedears" data-label="Cant." onclick="sortBy('cedears')">Cant.</th>
           <th data-key="precioCedear" data-label="$ actual" onclick="sortBy('precioCedear')">$ actual</th>
+          <th data-key="varDia" data-label="Var. % día" onclick="sortBy('varDia')" title="Variación del precio en pesos respecto del cierre anterior">Var. % día</th>
           <th data-key="precioCompra" data-label="$ compra" onclick="sortBy('precioCompra')">$ compra</th>
           <th data-key="saldoActual" data-label="Saldo ARS" onclick="sortBy('saldoActual')">Saldo ARS</th>
           <th data-key="montoCompra" data-label="Costo ARS" onclick="sortBy('montoCompra')">Costo ARS</th>
@@ -387,6 +388,7 @@
           <th>Asig.</th>
           <th>Monto a comprar</th>
           <th>Precio USD</th>
+          <th title="Variación del precio respecto del cierre anterior">Var. % día</th>
           <th>Cant. est.</th>
           <th>Cant. real</th>
           <th>Valor USD</th>
@@ -581,6 +583,8 @@ function parseSheetData(raw) {
   const iPct   = colIdx(['win/loss %','% ganancia','ganancia %','rendimiento %','% g/p','g/p %']);
   const iUSD   = colIdx(['saldo usd','usd']);
   const iFecha = colIdx(['fecha compra','fecha']);
+  // Opcional: columna del Sheet con la variación % del día (encabezado "Var. % día", "Variación", etc.). Si no existe, se usa data912.
+  const iVar   = colIdx(['var. %','var %','var.%','variación','variacion']);
 
   const iWLars = hdr.findIndex(h => /win\/loss$/i.test(h.trim()));
   const iWLpct = hdr.findIndex(h => /win\/loss\s*%/i.test(h.trim()));
@@ -617,7 +621,8 @@ function parseSheetData(raw) {
     const fechaCompra   = fechaDateObj ? formatFechaCorta(fechaDateObj) : '';
     const fechaCompraTs = fechaDateObj ? fechaDateObj.getTime() : 0;
     const mesesCartera  = fechaCompraTs ? (Date.now() - fechaCompraTs) / (1000*60*60*24*30.44) : 0;
-    return { symbol, activo, cedears, precioCedear, precioCompra, saldoActual, montoCompra, winLoss, pct: pctVal, saldoUSD, dist: 0, fechaCompra, fechaCompraTs, mesesCartera };
+    const varDia        = iVar >= 0 ? parseVarPct(get(r, iVar)) : null;
+    return { symbol, activo, cedears, precioCedear, precioCompra, varDia, saldoActual, montoCompra, winLoss, pct: pctVal, saldoUSD, dist: 0, fechaCompra, fechaCompraTs, mesesCartera };
   });
 
   const totalPesos = pos.reduce((s, p) => s + p.saldoActual, 0);
@@ -644,6 +649,36 @@ function assignColorMap() {
   });
 }
 
+// Variación % del día de los CEDEARs (precio en pesos vs cierre anterior), desde data912.com.
+// Se guarda en varDiaMap para no perderla cuando el Sheet se vuelve a leer cada 5 minutos.
+let varDiaMap = {};
+function aplicarVarDia() {
+  positions.forEach(p => {
+    const v = varDiaMap[p.symbol.toUpperCase()];
+    if ((p.varDia === null || p.varDia === undefined) && v !== undefined) p.varDia = v;
+  });
+}
+async function fetchVarDia() {
+  const urls = ['https://data912.com/live/arg_cedears', 'https://data912.com/live/arg_bonds'];
+  const results = await Promise.allSettled(urls.map(async u => {
+    const res = await fetchWithTimeout(u, 12000);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }));
+  results.forEach(r => {
+    if (r.status !== 'fulfilled' || !Array.isArray(r.value)) return;
+    r.value.forEach(x => {
+      const sym = String(x.symbol || '').toUpperCase(), v = Number(x.pct_change);
+      if (sym && x.pct_change !== null && x.pct_change !== undefined && !isNaN(v)) varDiaMap[sym] = v;
+    });
+  });
+  if (positions.length) { aplicarVarDia(); renderTable(); }
+}
+function varDiaCell(v) {
+  if (v === null || v === undefined || isNaN(v)) return '<td class="dimmed">—</td>';
+  return `<td class="${v > 0 ? 'pos' : v < 0 ? 'neg' : 'dimmed'}">${v > 0 ? '+' : ''}${v.toFixed(2).replace('.', ',')}%</td>`;
+}
+
 async function fetchLive() {
   setStatus('loading');
   document.getElementById('error-box').style.display = 'none';
@@ -653,6 +688,7 @@ async function fetchLive() {
 
     positions = excluirManejadosAparte(rawPos);
     summary = recalcularSummary(positions);
+    aplicarVarDia();
 
     if (ccl > 0) {
       cclValue = ccl;
@@ -811,7 +847,8 @@ function buildEtfTable() {
     <td class="left" style="font-size:12px;color:#94a3b8;white-space:nowrap">${e.name}</td>
     <td class="dimmed">${e.pct}%</td>
     <td class="bright" id="etf-monto-${e.sym}">—</td>
-    <td><input class="mini-input" type="number" step="0.01" id="etf-px-${e.sym}" value="${e.px0 || ''}" placeholder="USD" oninput="onUsdSettingsChange()"/><div class="etf-chg" id="etf-chg-${e.sym}"></div></td>
+    <td><input class="mini-input" type="number" step="0.01" id="etf-px-${e.sym}" value="${e.px0 || ''}" placeholder="USD" oninput="onUsdSettingsChange()"/></td>
+    <td class="dimmed" id="etf-var-${e.sym}">—</td>
     <td class="dimmed" id="etf-est-${e.sym}">—</td>
     <td><input class="mini-input" style="width:60px" type="number" step="1" min="0" id="real-${e.sym}" placeholder="—" oninput="onUsdSettingsChange()"/></td>
     <td class="bright" id="etf-val-${e.sym}">—</td>
@@ -863,8 +900,8 @@ function renderEtf(etf) {
   const sumMonto = etf.rows.reduce((t, r) => t + r.monto, 0);
   const sumPct = etf.rows.reduce((t, r) => t + r.pct, 0);
   document.getElementById('etf-tfoot').innerHTML = `
-    <tr class="total"><td class="left" colspan="2">Total a comprar</td><td style="text-align:right">${sumPct}%</td><td style="text-align:right">${fUSD(sumMonto)}</td><td colspan="4"></td></tr>
-    <tr class="total"><td class="left" colspan="7">Valor total ETFs</td><td style="text-align:right">${fUSD(etf.totalUSD)}</td></tr>`;
+    <tr class="total"><td class="left" colspan="2">Total a comprar</td><td style="text-align:right">${sumPct}%</td><td style="text-align:right">${fUSD(sumMonto)}</td><td colspan="5"></td></tr>
+    <tr class="total"><td class="left" colspan="8">Valor total ETFs</td><td style="text-align:right">${fUSD(etf.totalUSD)}</td></tr>`;
 }
 
 // Precios en vivo de los ETFs (Yahoo Finance vía proxy CORS). Cada precio queda editable a mano.
@@ -894,44 +931,64 @@ async function fetchYahooMeta(sym) {
 }
 
 // Prioridad de precios: 1) pestaña "etfs usd" del Sheet (GOOGLEFINANCE) 2) Yahoo Finance vía proxy 3) precio de respaldo.
+// Pestaña "etfs usd": A = ticker, B = precio (GOOGLEFINANCE), C = variación % del día (GOOGLEFINANCE "changepct").
 const ETF_SHEET_NAME = 'etfs usd';
+
+// Variación % tal como viene del Sheet: "0,53", "0.53", "-1,2%" → número en puntos porcentuales. Vacío o texto → null.
+function parseVarPct(s) {
+  if (s === undefined || s === null) return null;
+  let str = String(s).replace(/[%\s"]/g, '').replace(/^\+/, '').replace(',', '.');
+  if (!/^-?\d*\.?\d+$/.test(str)) return null;
+  return parseFloat(str);
+}
+
+// Pinta la columna "Var. % día" de un ETF (verde si sube, rojo si baja).
+function setEtfVar(sym, chg) {
+  const el = document.getElementById('etf-var-' + sym);
+  if (!el) return;
+  if (chg === null || chg === undefined || isNaN(chg)) { el.textContent = '—'; el.className = 'dimmed'; return; }
+  el.textContent = (chg > 0 ? '+' : '') + chg.toFixed(2).replace('.', ',') + '%';
+  el.className = chg > 0 ? 'pos' : chg < 0 ? 'neg' : 'dimmed';
+}
 
 async function fetchEtfPricesFromSheet() {
   const raw = await fetchCSV(ETF_SHEET_NAME);
   const rows = parseCSV(raw);
-  const out = {};
+  const out = {}, chg = {};
   rows.forEach(r => {
     const sym = (r[0] || '').trim().toUpperCase();
+    if (!IBKR_ETFS.some(e => e.sym === sym)) return;
     const px = parseNum(r[1]);
-    if (IBKR_ETFS.some(e => e.sym === sym) && px > 0) out[sym] = px;
+    if (px > 0) out[sym] = px;
+    const v = parseVarPct(r[2]);
+    if (v !== null) chg[sym] = v;
   });
-  return out;
+  return { px: out, chg };
 }
 
 async function fetchETFs() {
   const statusEl = document.getElementById('etf-status');
   statusEl.textContent = '⟳ consultando precios…';
-  let fromSheet = {};
-  try { fromSheet = await fetchEtfPricesFromSheet(); } catch (e) { fromSheet = {}; }
+  let fromSheet = {}, chgSheet = {};
+  try { const sh = await fetchEtfPricesFromSheet(); fromSheet = sh.px; chgSheet = sh.chg; } catch (e) { fromSheet = {}; chgSheet = {}; }
   const nSheet = Object.keys(fromSheet).length;
-  IBKR_ETFS.forEach(e => { if (fromSheet[e.sym]) document.getElementById('etf-px-' + e.sym).value = fromSheet[e.sym]; });
+  IBKR_ETFS.forEach(e => {
+    if (fromSheet[e.sym]) document.getElementById('etf-px-' + e.sym).value = fromSheet[e.sym];
+    if (chgSheet[e.sym] !== undefined) setEtfVar(e.sym, chgSheet[e.sym]);
+  });
 
-  const faltan = IBKR_ETFS.filter(e => !fromSheet[e.sym]);
+  // Yahoo se consulta para lo que el Sheet no trajo: precio, o solo la variación % del día.
+  const faltan = IBKR_ETFS.filter(e => !fromSheet[e.sym] || chgSheet[e.sym] === undefined);
   let nYahoo = 0;
   if (faltan.length) {
     const results = await Promise.allSettled(faltan.map(e => fetchYahooMeta(e.sym)));
     results.forEach((r, i) => {
       if (r.status !== 'fulfilled') return;
-      nYahoo++;
       const sym = faltan[i].sym, meta = r.value;
-      document.getElementById('etf-px-' + sym).value = meta.regularMarketPrice;
-      const prev = meta.chartPreviousClose || meta.previousClose;
-      const chgEl = document.getElementById('etf-chg-' + sym);
-      if (prev > 0) {
-        const chg = (meta.regularMarketPrice / prev - 1) * 100;
-        chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '% vs cierre ant.';
-        chgEl.className = 'etf-chg ' + (chg >= 0 ? 'pos' : 'neg');
-      }
+      if (!fromSheet[sym]) { nYahoo++; document.getElementById('etf-px-' + sym).value = meta.regularMarketPrice; }
+      // previousClose = cierre del día anterior (chartPreviousClose es el cierre previo al rango de 5 días, no sirve para la variación diaria)
+      const prev = meta.previousClose || meta.regularMarketPreviousClose;
+      if (chgSheet[sym] === undefined && prev > 0) setEtfVar(sym, (meta.regularMarketPrice / prev - 1) * 100);
     });
   }
   const total = IBKR_ETFS.length, ok = nSheet + nYahoo, hora = new Date().toLocaleTimeString('es-AR');
@@ -1300,6 +1357,7 @@ function renderTable() {
       <td class="dimmed">${p.mesesCartera ? p.mesesCartera.toFixed(1) : '—'}</td>
       <td class="dimmed">${p.cedears}</td>
       <td style="color:#cbd5e1;font-weight:500">${fARS(p.precioCedear)}</td>
+      ${varDiaCell(p.varDia)}
       <td class="dimmed">${fARS(p.precioCompra)}</td>
       <td class="bright">${fARS(p.saldoActual)}</td>
       <td class="dimmed">${fARS(p.montoCompra)}</td>
@@ -1381,6 +1439,7 @@ function render() { renderCards(); renderTable(); renderGananciasPerdidas(); ren
 
 async function cargarTodo() {
   await fetchLive();
+  fetchVarDia().catch(() => {}); // si data912 no responde, la columna queda en "—"
 }
 
 buildEtfTable();
