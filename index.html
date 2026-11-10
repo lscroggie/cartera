@@ -931,7 +931,9 @@ async function fetchYahooMeta(sym) {
 }
 
 // Prioridad de precios: 1) pestaña "etfs usd" del Sheet (GOOGLEFINANCE) 2) Yahoo Finance vía proxy 3) precio de respaldo.
-// Pestaña "etfs usd": A = ticker, B = precio (GOOGLEFINANCE), C = variación % del día (GOOGLEFINANCE "changepct").
+// Pestaña "etfs usd": A = ticker, B = precio (GOOGLEFINANCE), C = variación % del día (GOOGLEFINANCE "changepct"),
+// D (opcional) = cierre anterior (GOOGLEFINANCE "closeyest"). Si D existe, la variación se calcula acá como B/D-1 y no depende de C.
+// Un 0 exacto en C se toma como dato dudoso (changepct suele devolver 0, o la celda redondea): se intenta Yahoo antes de mostrarlo.
 const ETF_SHEET_NAME = 'etfs usd';
 
 // Variación % tal como viene del Sheet: "0,53", "0.53", "-1,2%" → número en puntos porcentuales. Vacío o texto → null.
@@ -954,27 +956,31 @@ function setEtfVar(sym, chg) {
 async function fetchEtfPricesFromSheet() {
   const raw = await fetchCSV(ETF_SHEET_NAME);
   const rows = parseCSV(raw);
-  const out = {}, chg = {};
+  const out = {}, chg = {}, cero = {};
   rows.forEach(r => {
     const sym = (r[0] || '').trim().toUpperCase();
     if (!IBKR_ETFS.some(e => e.sym === sym)) return;
     const px = parseNum(r[1]);
     if (px > 0) out[sym] = px;
+    const prev = parseNum(r[3]);
+    if (px > 0 && prev > 0) { chg[sym] = (px / prev - 1) * 100; return; } // calculada con el cierre anterior: confiable
     const v = parseVarPct(r[2]);
-    if (v !== null) chg[sym] = v;
+    if (v === null) return;
+    if (v === 0) cero[sym] = true; else chg[sym] = v;
   });
-  return { px: out, chg };
+  return { px: out, chg, cero };
 }
 
 async function fetchETFs() {
   const statusEl = document.getElementById('etf-status');
   statusEl.textContent = '⟳ consultando precios…';
-  let fromSheet = {}, chgSheet = {};
-  try { const sh = await fetchEtfPricesFromSheet(); fromSheet = sh.px; chgSheet = sh.chg; } catch (e) { fromSheet = {}; chgSheet = {}; }
+  let fromSheet = {}, chgSheet = {}, ceroSheet = {};
+  try { const sh = await fetchEtfPricesFromSheet(); fromSheet = sh.px; chgSheet = sh.chg; ceroSheet = sh.cero; } catch (e) { fromSheet = {}; chgSheet = {}; ceroSheet = {}; }
   const nSheet = Object.keys(fromSheet).length;
   IBKR_ETFS.forEach(e => {
     if (fromSheet[e.sym]) document.getElementById('etf-px-' + e.sym).value = fromSheet[e.sym];
     if (chgSheet[e.sym] !== undefined) setEtfVar(e.sym, chgSheet[e.sym]);
+    else if (ceroSheet[e.sym]) setEtfVar(e.sym, 0); // provisorio: se reemplaza si Yahoo responde
   });
 
   // Yahoo se consulta para lo que el Sheet no trajo: precio, o solo la variación % del día.
