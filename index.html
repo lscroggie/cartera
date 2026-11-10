@@ -370,7 +370,7 @@
   <div class="usd-controls">
     <div class="cap-row">
       <label for="capital-usd">Capital USD a invertir</label>
-      <input class="mini-input" id="capital-usd" type="number" step="50" value="8330" oninput="onUsdSettingsChange()"/>
+      <input class="mini-input" id="capital-usd" type="number" step="50" value="5300" oninput="onUsdSettingsChange()"/>
       <span class="pat-hint">Los montos de cada ETF se calculan sobre este capital</span>
     </div>
   </div>
@@ -830,12 +830,12 @@ function getBalanzTotalUSD() {
 // ===== Bloque USD: ETFs de Interactive Brokers =====
 // px0 = precio de respaldo (cierre del 23/10/2026). Si Yahoo responde, el precio en vivo lo reemplaza.
 const IBKR_ETFS = [
-  { sym: 'VTI',  name: 'Vanguard Total Stock Market',           pct: 20,   px0: 373.88 },
-  { sym: 'VXUS', name: 'Vanguard Total International Stock',    pct: 20,   px0: 82.53 },
-  { sym: 'SCHD', name: 'Schwab US Dividend Equity',             pct: 20,   px0: 35.24 },
-  { sym: 'SHV',  name: 'iShares Short Treasury Bond (T-Bills)', pct: 15,   px0: 110.33 },
-  { sym: 'XLV',  name: 'Health Care Select Sector SPDR',        pct: 12.5, px0: 179.69 },
-  { sym: 'SPMO', name: 'Invesco S&P 500 Momentum',              pct: 12.5, px0: 143.80 }, // aprox. (último dato público: 08/05/2026); el Sheet lo pisa
+  { sym: 'VTI',  name: 'Vanguard Total Stock Market',           pct: 25, px0: 373.88 },
+  { sym: 'VUG',  name: 'Vanguard Growth ETF',                   pct: 25 }, // sin precio de respaldo: lo trae el Sheet (agregar VUG en la pestaña "etfs usd")
+  { sym: 'VXUS', name: 'Vanguard Total International Stock',    pct: 15, px0: 82.53 },
+  { sym: 'SCHD', name: 'Schwab US Dividend Equity',             pct: 15, px0: 35.24 },
+  { sym: 'XLV',  name: 'Health Care Select Sector SPDR',        pct: 10, px0: 179.69 },
+  { sym: 'VCSH', name: 'Vanguard Short-Term Corporate Bond',    pct: 10 }, // sin precio de respaldo: lo trae el Sheet (agregar VCSH en la pestaña "etfs usd")
 ];
 const USD_SETTINGS_KEY = 'portfolio_usd_settings_v2';
 
@@ -858,7 +858,7 @@ function buildEtfTable() {
 function loadUsdSettings() {
   let s = {};
   try { s = JSON.parse(localStorage.getItem(USD_SETTINGS_KEY) || '{}') || {}; } catch (e) { s = {}; }
-  // El capital NO se restaura de localStorage: manda el valor del HTML (8330) para que no pise con montos viejos.
+  // El capital NO se restaura de localStorage: manda el valor del HTML (5300) para que no pise con montos viejos.
   if (s.real) IBKR_ETFS.forEach(e => { if (s.real[e.sym] > 0) document.getElementById('real-' + e.sym).value = s.real[e.sym]; });
 }
 
